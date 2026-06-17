@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="en" id="html-root">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataSeva — India's Robot Training Data Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1A3A5C;--blue:#2C5F8A;--sky:#4A90C4;
+  --saffron:#FF6B00;--green:#1A7A40;--red:#C0392B;
+  --light:#F4F8FC;--border:#DDE6EF;--text:#1A2A3A;
+  --muted:#6B84A0;--white:#fff;--gold:#E8A020;
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--light);color:var(--text)}
+
+/* NAV */
+nav{background:var(--navy);padding:0 28px;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(0,0,0,.2);gap:10px;flex-wrap:nowrap}
+.logo{color:#fff;font-size:20px;font-weight:900;cursor:pointer;letter-spacing:-.5px;white-space:nowrap;flex-shrink:0}
+.logo span{color:var(--saffron)}
+.logo small{font-size:10px;font-weight:400;color:#9AB8D4;display:block;margin-top:-3px}
+.nav-links{display:flex;gap:2px;align-items:center;flex-wrap:wrap;flex:1;justify-content:center}
+.nav-link{color:#9AB8D4;font-size:12px;cursor:pointer;padding:5px 9px;border-radius:6px;transition:.2s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{color:#fff;background:rgba(255,255,255,.1)}
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-nav{background:var(--saffron);color:#fff;font-weight:700;font-size:12px;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.btn-nav:hover{background:#FF8533}
+
+/* LANGUAGE SELECTOR */
+.lang-select{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);color:#fff;font-size:12px;padding:5px 8px;border-radius:7px;cursor:pointer;outline:none}
+.lang-select option{background:var(--navy);color:#fff}
+
+/* PAGES */
+.page{display:none}.page.active{display:block}
+
+/* HERO */
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#1E5080 100%);padding:60px 40px 48px;color:#fff;text-align:center}
+.hero-badge{display:inline-block;background:rgba(255,107,0,.15);border:1px solid rgba(255,107,0,.4);color:var(--saffron);font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;margin-bottom:16px;letter-spacing:1px}
+.hero h1{font-size:38px;font-weight:900;line-height:1.15;margin-bottom:12px}
+.hero h1 span{color:var(--saffron)}
+.hero p{font-size:15px;color:#B8CCDF;max-width:500px;margin:0 auto 26px;line-height:1.6}
+.hero-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-primary{background:var(--saffron);color:#fff;font-weight:700;font-size:13px;border:none;padding:11px 24px;border-radius:10px;cursor:pointer;transition:.2s}
+.btn-primary:hover{background:#FF8533;transform:translateY(-2px)}
+.btn-outline{background:transparent;color:#fff;font-weight:600;font-size:13px;border:2px solid rgba(255,255,255,.35);padding:9px 24px;border-radius:10px;cursor:pointer;transition:.2s}
+.btn-outline:hover{border-color:#fff;background:rgba(255,255,255,.1)}
+
+/* STATS */
+.stats-bar{background:#fff;border-bottom:1px solid var(--border);padding:14px 40px;display:flex;justify-content:center;gap:44px;flex-wrap:wrap}
+.stat-num{font-size:20px;font-weight:900;color:var(--navy)}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* SECTION */
+.section{padding:44px 40px;max-width:1100px;margin:0 auto}
+.section-title{font-size:24px;font-weight:800;color:var(--navy);margin-bottom:5px}
+.section-sub{font-size:13px;color:var(--muted);margin-bottom:28px}
+
+/* CARDS */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:20px;transition:.2s}
+.card:hover{box-shadow:0 6px 24px rgba(26,58,92,.11);transform:translateY(-2px);border-color:var(--sky)}
+.tag{background:var(--light);border:1px solid var(--border);color:var(--blue);font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.card-tags{display:flex;flex-wrap:wrap;gap:5px;margin:8px 0}
+.rate{font-size:17px;font-weight:900;color:var(--green)}
+.rating{font-size:13px;color:var(--gold);font-weight:700}
+.match-score{display:inline-flex;align-items:center;gap:4px;background:#EAF7EE;border:1px solid #A8D9B8;border-radius:20px;padding:2px 9px;font-size:11px;font-weight:700;color:var(--green);margin-bottom:6px}
+.match-score.medium{background:#FEF3E2;border-color:#F0C878;color:#B07010}
+.match-score.low{background:#FEF0F0;border-color:#F0A8A8;color:var(--red)}
+
+/* FILTERS */
+.filter-bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:20px;align-items:center}
+.filter-btn{padding:6px 13px;border:1.5px solid var(--border);border-radius:20px;background:#fff;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;transition:.2s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--navy);color:var(--navy);background:var(--light)}
+.search-input{flex:1;max-width:260px;padding:7px 13px;border:1.5px solid var(--border);border-radius:20px;font-size:12px}
+
+/* FORMS */
+.form-box{background:#fff;border:1px solid var(--border);border-radius:16px;padding:28px;max-width:700px;margin:0 auto}
+.form-title{font-size:18px;font-weight:800;color:var(--navy);margin-bottom:3px}
+.form-sub{font-size:12px;color:var(--muted);margin-bottom:22px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.fg{margin-bottom:14px}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--navy);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.fg input,.fg select,.fg textarea{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);font-family:inherit;transition:.2s;background:#fff}
+.fg input:focus,.fg select:focus,.fg textarea:focus{outline:none;border-color:var(--sky)}
+.fg textarea{resize:vertical;min-height:72px}
+.fg .hint{font-size:10px;color:var(--muted);margin-top:3px}
+.other-field{margin-top:6px;display:none}
+.other-field.show{display:block}
+.toggle-row{display:flex;gap:7px;flex-wrap:wrap}
+.toggle-btn{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:#fff;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);transition:.2s}
+.toggle-btn.active{border-color:var(--sky);background:#EEF6FD;color:var(--blue)}
+.checkbox-group{display:flex;flex-wrap:wrap;gap:6px}
+.cb{display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;background:var(--light);border:1px solid var(--border);padding:5px 10px;border-radius:8px}
+.cb input{width:auto}
+.btn-submit{width:100%;background:var(--navy);color:#fff;font-weight:700;font-size:13px;border:none;padding:11px;border-radius:10px;cursor:pointer;margin-top:5px;transition:.2s}
+.btn-submit:hover{background:var(--blue)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+
+/* RATE GUIDE */
+.rate-guide{background:var(--light);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:13px}
+.rate-row{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px}
+.rate-row:last-child{border:0}
+.rate-feedback{font-size:12px;padding:8px 12px;border-radius:8px;margin-top:4px;display:none}
+
+/* PREVIEW */
+.preview-card{background:#fff;border:2px solid var(--sky);border-radius:14px;padding:18px;margin-top:16px}
+.preview-label{font-size:10px;font-weight:700;color:var(--sky);letter-spacing:1px;margin-bottom:8px}
+
+/* SUCCESS */
+.success-box{background:#EAF7EE;border:1.5px solid #A8D9B8;border-radius:10px;padding:16px 20px;text-align:center;margin-top:14px;display:none}
+.success-box.show{display:block}
+.success-box h3{color:var(--green);font-size:15px;margin-bottom:3px}
+.success-box p{color:#3A7A50;font-size:12px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;padding:26px;width:92%;max-width:480px;position:relative;max-height:92vh;overflow-y:auto}
+.modal-close{position:absolute;top:12px;right:12px;background:var(--light);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:15px}
+
+/* MANAGED */
+.managed-banner{background:linear-gradient(135deg,var(--navy),#1E5080);border-radius:16px;padding:28px 32px;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:32px}
+.mf{font-size:12px;color:#D0E4F4;display:inline-flex;align-items:center;gap:4px;margin-right:10px;margin-top:6px}
+.mf::before{content:"✓";color:var(--saffron);font-weight:700}
+
+/* FORM TABS */
+.form-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:22px;overflow-x:auto}
+.form-tab{padding:8px 16px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:.2s;white-space:nowrap}
+.form-tab.active{color:var(--navy);border-bottom-color:var(--saffron)}
+
+/* DIVIDER */
+hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+/* GST BADGE */
+.gst-badge{background:#FEF3E2;border:1px solid #F0C878;color:#9A6010;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px}
+
+/* PROFILE MGMT — clean, no highlights */
+.profile-mgmt-section{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;margin-bottom:16px}
+.profile-mgmt-section h3{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.profile-mgmt-section p{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5}
+.status-badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.status-active{background:#EAF7EE;color:var(--green)}
+.status-paused{background:#FEF3E2;color:#C07010}
+.btn-small{padding:8px 16px;font-size:12px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:.2s}
+.btn-pause{background:var(--light);border:1.5px solid var(--border);color:var(--text)}
+.btn-pause:hover{border-color:var(--muted);background:#eee}
+.btn-delete{background:var(--light);border:1.5px solid var(--border);color:var(--red)}
+.btn-delete:hover{border-color:var(--red);background:#fff5f5}
+.btn-resume{background:#EAF7EE;border:1.5px solid #A8D9B8;color:var(--green)}
+.btn-resume:hover{background:#D5F0E0}
+
+/* STEPS */
+.steps{display:flex;flex-wrap:wrap;margin-bottom:28px}
+.step{flex:1;min-width:130px;text-align:center;padding:18px 10px;position:relative}
+.step:not(:last-child)::after{content:"→";position:absolute;right:-8px;top:34px;font-size:18px;color:var(--border)}
+.step-num{width:38px;height:38px;background:var(--navy);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;margin:0 auto 8px}
+.step-title{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:3px}
+.step-desc{font-size:11px;color:var(--muted);line-height:1.4}
+
+/* PLAN CARDS */
+.plan-card{background:#fff;border:2px solid var(--border);border-radius:14px;padding:22px}
+.plan-card.featured{border-color:var(--sky)}
+
+/* MATCH HEADER */
+.match-header{background:linear-gradient(135deg,var(--navy),#1E5080);padding:28px 40px;color:#fff}
+.crit-tag{background:rgba(255,107,0,.2);border:1px solid rgba(255,107,0,.4);color:#FFB070;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+
+@media(max-width:620px){
+  nav{padding:0 12px}
+  .hero h1{font-size:24px}
+  .frow{grid-template-columns:1fr}
+  .stats-bar{gap:16px;padding:12px 16px}
+  .section{padding:28px 14px}
+  .step:not(:last-child)::after{display:none}
+  .nav-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══════════════════════════════════════════════════════════════ -->
+<nav>
+  <div class="logo" onclick="showPage('home')">
+    Data<span>Seva</span>
+    <small id="nav-tagline">India's Robot Data Platform</small>
+  </div>
+  <div class="nav-links">
+    <div class="nav-link" onclick="showPage('match')" data-i18n="nav_match">🎯 Find Match</div>
+    <div class="nav-link" onclick="showPage('browse')" data-i18n="nav_browse">Browse</div>
+    <div class="nav-link" onclick="showPage('managed')" data-i18n="nav_managed">Managed Service</div>
+    <div class="nav-link" onclick="showPage('join')" data-i18n="nav_join">Join as Collector</div>
+    <div class="nav-link" onclick="showPage('company')" data-i18n="nav_company">Company Register</div>
+  </div>
+  <div class="nav-right">
+    <select class="lang-select" onchange="setLang(this.value)">
+      <option value="en">🇬🇧 English</option>
+      <option value="hi">🇮🇳 हिन्दी</option>
+      <option value="ta">தமிழ்</option>
+      <option value="te">తెలుగు</option>
+      <option value="kn">ಕನ್ನಡ</option>
+      <option value="ml">മലയാളം</option>
+      <option value="mr">मराठी</option>
+      <option value="bn">বাংলা</option>
+      <option value="gu">ગુજરાતી</option>
+      <option value="pa">ਪੰਜਾਬੀ</option>
+      <option value="or">ଓଡ଼ିଆ</option>
+      <option value="as">অসমীয়া</option>
+    </select>
+    <button class="btn-nav" onclick="showPage('profile-mgmt')" data-i18n="nav_myprofile">My Profile</button>
+  </div>
+</nav>
+
+<!-- ═══ HOME ═══════════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="hero">
+    <div class="hero-badge" data-i18n="home_badge">🇮🇳 MADE FOR INDIA · ROBOT TRAINING DATA</div>
+    <h1 data-i18n="home_h1">Earn from Home by<br><span>Training AI Robots</span></h1>
+    <p data-i18n="home_p">India's first gig platform for human motion data collection. Companies hire verified Indian collectors. Set your own rate in ₹.</p>
+    <div class="hero-btns">
+      <button class="btn-primary" onclick="showPage('join')" data-i18n="home_btn_collector">Become a Collector →</button>
+      <button class="btn-outline" onclick="showPage('company')" data-i18n="home_btn_company">Register Your Company</button>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">9,200+</div><div class="stat-label" data-i18n="stat_collectors">Active Collectors</div></div>
+    <div class="stat"><div class="stat-num">380+</div><div class="stat-label" data-i18n="stat_companies">Verified Companies</div></div>
+    <div class="stat"><div class="stat-num">₹850/hr</div><div class="stat-label" data-i18n="stat_rate">Avg. Rate</div></div>
+    <div class="stat"><div class="stat-num">24</div><div class="stat-label" data-i18n="stat_states">States Covered</div></div>
+  </div>
+  <div class="section">
+    <h2 class="section-title" data-i18n="home_tasks_title">What Tasks Can You Record?</h2>
+    <p class="section-sub" data-i18n="home_tasks_sub">All tasks used to train next-gen humanoid robots and AI systems</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;margin-bottom:36px">
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🏠</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_household">Household Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_household_desc">Cooking, cleaning, folding</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹600–₹1,200/hr</div></div>
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">📦</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_warehouse">Warehouse Motion</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_warehouse_desc">Picking, packing, sorting</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹800–₹1,800/hr</div></div>
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🖐️</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_dexterity">Dexterity Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_dexterity_desc">Fine motor, grasping</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,000–₹2,500/hr</div></div>
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🚶</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_gait">Gait & Navigation</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_gait_desc">Walking, stairs, obstacles</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,200–₹3,000/hr</div></div>
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🏥</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_care">Care Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_care_desc">Elder assist, rehab</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹900–₹2,200/hr</div></div>
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🔧</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_tools">Tool Use</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_tools_desc">Maintenance, assembly</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,000–₹2,000/hr</div></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-primary" onclick="showPage('match')" data-i18n="home_cta_match">🎯 Find Matched Collectors</button>
+      <button class="btn-primary" style="background:var(--navy)" onclick="showPage('managed')" data-i18n="home_cta_managed">⚡ Managed Service</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MATCH PAGE ════════════════════════════════════════════════════════ -->
+<div class="page" id="page-match">
+  <div class="match-header">
+    <h1 style="font-size:26px;font-weight:800;margin-bottom:4px" data-i18n="match_title">🎯 Smart Matchmaking</h1>
+    <p style="color:#B8CCDF;font-size:13px" data-i18n="match_sub">Our algorithm scores every collector for your exact requirement</p>
+    <div id="active-criteria" style="margin-top:12px;display:none;flex-wrap:wrap;gap:6px"></div>
+  </div>
+  <div class="section">
+    <div class="form-box" style="margin-bottom:28px;max-width:900px">
+      <div class="form-title" data-i18n="match_req_title">Your Requirement</div>
+      <div class="form-sub" data-i18n="match_req_sub">More filters = better match score accuracy</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px">
+        <div class="fg"><label data-i18n="label_task">Task Category</label>
+          <select id="req-task" onchange="runMatch()">
+            <option value="" data-i18n="opt_any">Any</option>
+            <option value="household" data-i18n="task_household">🏠 Household</option>
+            <option value="warehouse" data-i18n="task_warehouse">📦 Warehouse</option>
+            <option value="dexterity" data-i18n="task_dexterity">🖐️ Dexterity</option>
+            <option value="gait" data-i18n="task_gait">🚶 Gait</option>
+            <option value="care" data-i18n="task_care">🏥 Care</option>
+            <option value="tools" data-i18n="task_tools">🔧 Tool Use</option>
+            <option value="food">🍳 Food Prep</option>
+          </select>
+        </div>
+        <div class="fg"><label data-i18n="label_city">City</label>
+          <select id="req-city" onchange="runMatch()">
+            <option value="" data-i18n="opt_any_city">Any City</option>
+            <option>Bangalore</option><option>Mumbai</option><option>Delhi NCR</option>
+            <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+            <option>Kolkata</option><option>Ahmedabad</option><option>Jaipur</option>
+            <option>Kochi</option><option>Lucknow</option><option>Nagpur</option>
+          </select>
+        </div>
+        <div class="fg"><label data-i18n="label_budget">Max Budget (₹/hr)</label>
+          <select id="req-budget" onchange="runMatch()">
+            <option value="99999" data-i18n="opt_any">Any</option>
+            <option value="800">Under ₹800</option>
+            <option value="1200">Under ₹1,200</option>
+            <option value="2000">Under ₹2,000</option>
+            <option value="3000">Under ₹3,000</option>
+          </select>
+        </div>
+        <div class="fg"><label data-i18n="label_rating">Min Rating</label>
+          <select id="req-rating" onchange="runMatch()">
+            <option value="0" data-i18n="opt_any">Any</option>
+            <option value="4">4+ ★</option>
+            <option value="4.5">4.5+ ★</option>
+            <option value="5">5 ★ only</option>
+          </select>
+        </div>
+        <div class="fg"><label data-i18n="label_equip">Equipment</label>
+          <select id="req-equip" onchange="runMatch()">
+            <option value="" data-i18n="opt_any">Any</option>
+            <option value="camera">Basic Camera</option>
+            <option value="mount">Head/Chest Mount</option>
+            <option value="wearable">Wearable Sensors</option>
+            <option value="mocap">Motion Capture</option>
+          </select>
+        </div>
+        <div class="fg"><label data-i18n="label_avail">Availability</label>
+          <select id="req-avail" onchange="runMatch()">
+            <option value="" data-i18n="opt_any">Any</option>
+            <option value="weekday" data-i18n="avail_weekday">Weekdays</option>
+            <option value="weekend" data-i18n="avail_weekend">Weekends</option>
+            <option value="flexible" data-i18n="avail_flexible">Flexible</option>
+          </select>
+        </div>
+        <div class="fg"><label data-i18n="label_lang">Language</label>
+          <select id="req-lang" onchange="runMatch()">
+            <option value="" data-i18n="opt_any">Any</option>
+            <option>Hindi</option><option>Tamil</option><option>Telugu</option>
+            <option>Kannada</option><option>Malayalam</option><option>Bengali</option>
+            <option>Marathi</option><option>Gujarati</option><option>Punjabi</option>
+          </select>
+        </div>
+        <div class="fg"><label data-i18n="label_exp">Experience</label>
+          <select id="req-exp" onchange="runMatch()">
+            <option value="" data-i18n="opt_any">Any</option>
+            <option value="new" data-i18n="exp_new">New (0–3 months)</option>
+            <option value="mid" data-i18n="exp_mid">Experienced (3–12 mo)</option>
+            <option value="senior" data-i18n="exp_senior">Expert (1+ year)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+      <div><span id="match-count" style="font-size:18px;font-weight:800;color:var(--navy)">9,200</span> <span style="font-size:13px;color:var(--muted)" data-i18n="match_results_label">collectors matched · sorted by match score</span></div>
+      <div style="font-size:11px;color:var(--muted)">🟢 High &nbsp;🟡 Medium &nbsp;🔴 Lower fit</div>
+    </div>
+    <div class="cards-grid" id="match-grid"></div>
+  </div>
+</div>
+
+<!-- ═══ BROWSE PAGE ═══════════════════════════════════════════════════════ -->
+<div class="page" id="page-browse">
+  <div style="background:var(--navy);padding:28px 40px;color:#fff">
+    <h1 style="font-size:24px;font-weight:800;margin-bottom:4px" data-i18n="browse_title">Browse All Collectors</h1>
+    <p style="color:#B8CCDF;font-size:13px" data-i18n="browse_sub">9,200+ verified collectors across India</p>
+  </div>
+  <div class="section">
+    <div class="filter-bar">
+      <input class="search-input" type="text" id="browse-search" placeholder="🔍 Search..." oninput="filterBrowseSearch()">
+      <button class="filter-btn active" onclick="filterBrowse(this,'all')" data-i18n="filter_all">All</button>
+      <button class="filter-btn" onclick="filterBrowse(this,'household')">🏠</button>
+      <button class="filter-btn" onclick="filterBrowse(this,'warehouse')">📦</button>
+      <button class="filter-btn" onclick="filterBrowse(this,'dexterity')">🖐️</button>
+      <button class="filter-btn" onclick="filterBrowse(this,'gait')">🚶</button>
+      <button class="filter-btn" onclick="filterBrowse(this,'care')">🏥</button>
+    </div>
+    <div class="cards-grid" id="browse-grid"></div>
+  </div>
+</div>
+
+<!-- ═══ JOIN PAGE ════════════════════════════════════════════════════════ -->
+<div class="page" id="page-join">
+  <div style="background:var(--navy);padding:28px 40px;color:#fff">
+    <h1 style="font-size:24px;font-weight:800;margin-bottom:4px" data-i18n="join_title">Join as a Data Collector</h1>
+    <p style="color:#B8CCDF;font-size:13px" data-i18n="join_sub">Create your profile · Set your ₹ rate · Companies call you</p>
+  </div>
+  <div class="section">
+    <div class="form-box" style="max-width:720px">
+      <div class="form-tabs">
+        <div class="form-tab active" onclick="goTab(0)" data-i18n="tab_profile">1. Profile</div>
+        <div class="form-tab" onclick="goTab(1)" data-i18n="tab_skills">2. Skills</div>
+        <div class="form-tab" onclick="goTab(2)" data-i18n="tab_rate">3. Rate</div>
+      </div>
+
+      <!-- TAB 0: Profile -->
+      <div id="jtab-0">
+        <div class="frow">
+          <div class="fg"><label data-i18n="label_firstname">First Name</label><input id="j-fn" placeholder="Priya" oninput="livePreview()"></div>
+          <div class="fg"><label data-i18n="label_lastname">Last Name</label><input id="j-ln" placeholder="Sharma" oninput="livePreview()"></div>
+        </div>
+        <div class="frow">
+          <div class="fg"><label data-i18n="label_mobile">Mobile Number</label><input id="j-mob" placeholder="+91 98XXX XXXXX"><div class="hint" data-i18n="hint_mobile">Companies call you on this number</div></div>
+          <div class="fg"><label data-i18n="label_age">Age</label><input type="number" placeholder="24" min="18" max="65"></div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label data-i18n="label_city">City</label>
+            <select id="j-city" onchange="toggleOther('j-city','j-city-other'); livePreview()">
+              <option>Bangalore</option><option>Mumbai</option><option>Delhi NCR</option>
+              <option>Hyderabad</option><option>Chennai</option><option>Pune</option>
+              <option>Kolkata</option><option>Ahmedabad</option><option>Jaipur</option>
+              <option>Kochi</option><option>Lucknow</option><option>Nagpur</option>
+              <option>Coimbatore</option><option>Indore</option><option>Bhubaneswar</option>
+              <option value="Other" data-i18n="opt_other">Other</option>
+            </select>
+            <div class="other-field" id="j-city-other"><input placeholder="Enter your city" oninput="livePreview()"></div>
+          </div>
+          <div class="fg">
+            <label data-i18n="label_state">State</label>
+            <select id="j-state" onchange="toggleOther('j-state','j-state-other')">
+              <option>Karnataka</option><option>Maharashtra</option><option>Delhi</option>
+              <option>Telangana</option><option>Tamil Nadu</option><option>Gujarat</option>
+              <option>West Bengal</option><option>Rajasthan</option><option>Uttar Pradesh</option>
+              <option>Kerala</option><option>Madhya Pradesh</option><option>Odisha</option>
+              <option>Punjab</option><option>Assam</option><option>Bihar</option>
+              <option value="Other" data-i18n="opt_other">Other</option>
+            </select>
+            <div class="other-field" id="j-state-other"><input placeholder="Enter your state"></div>
+          </div>
+        </div>
+        <div class="fg"><label data-i18n="label_languages">Languages Spoken</label>
+          <div class="checkbox-group">
+            <label class="cb"><input type="checkbox" checked> Hindi</label>
+            <label class="cb"><input type="checkbox"> English</label>
+            <label class="cb"><input type="checkbox"> Tamil</label>
+            <label class="cb"><input type="checkbox"> Telugu</label>
+            <label class="cb"><input type="checkbox"> Kannada</label>
+            <label class="cb"><input type="checkbox"> Malayalam</label>
+            <label class="cb"><input type="checkbox"> Bengali</label>
+            <label class="cb"><input type="checkbox"> Marathi</label>
+            <label class="cb"><input type="checkbox"> Gujarati</label>
+            <label class="cb"><input type="checkbox"> Punjabi</label>
+            <label class="cb"><input type="checkbox"> Odia</label>
+            <label class="cb"><input type="checkbox"> Assamese</label>
+          </div>
+        </div>
+        <div class="fg"><label data-i18n="label_bio">Bio</label><textarea id="j-bio" placeholder="e.g. Homemaker with smartphone, available weekdays. Reliable and punctual." oninput="livePreview()"></textarea></div>
+        <div class="fg"><label data-i18n="label_availability">Availability</label>
+          <div class="toggle-row">
+            <button class="toggle-btn active" onclick="tog(this)" data-i18n="avail_weekday">Weekdays</button>
+            <button class="toggle-btn" onclick="tog(this)" data-i18n="avail_weekend">Weekends</button>
+            <button class="toggle-btn" onclick="tog(this)">Evenings</button>
+            <button class="toggle-btn" onclick="tog(this)" data-i18n="avail_flexible">Flexible</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 1: Skills -->
+      <div id="jtab-1" style="display:none">
+        <div class="fg"><label data-i18n="label_tasks">Task Categories</label>
+          <div class="checkbox-group">
+            <label class="cb"><input type="checkbox" checked> 🏠 Household</label>
+            <label class="cb"><input type="checkbox"> 📦 Warehouse</label>
+            <label class="cb"><input type="checkbox"> 🖐️ Dexterity</label>
+            <label class="cb"><input type="checkbox"> 🚶 Gait</label>
+            <label class="cb"><input type="checkbox"> 🏥 Care</label>
+            <label class="cb"><input type="checkbox"> 🍳 Food Prep</label>
+            <label class="cb"><input type="checkbox"> 🔧 Tool Use</label>
+            <label class="cb"><input type="checkbox"> 🗣️ Interaction</label>
+          </div>
+        </div>
+        <div class="fg"><label data-i18n="label_camera">Camera Equipment</label>
+          <div class="checkbox-group">
+            <label class="cb"><input type="checkbox" checked> Smartphone 720p+</label>
+            <label class="cb"><input type="checkbox"> Smartphone 1080p+</label>
+            <label class="cb"><input type="checkbox"> Action Camera</label>
+            <label class="cb"><input type="checkbox"> Tripod</label>
+            <label class="cb"><input type="checkbox"> Head/Chest Mount</label>
+            <label class="cb"><input type="checkbox"> 360° Camera</label>
+          </div>
+        </div>
+        <div class="fg"><label data-i18n="label_sensors">Wearable Sensors</label>
+          <div class="checkbox-group">
+            <label class="cb"><input type="checkbox"> Smartwatch</label>
+            <label class="cb"><input type="checkbox"> IMU Sensors</label>
+            <label class="cb"><input type="checkbox"> Motion Capture Suit</label>
+            <label class="cb"><input type="checkbox" checked> None</label>
+          </div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label data-i18n="label_home_env">Home Environment</label>
+            <select id="j-env" onchange="toggleOther('j-env','j-env-other')">
+              <option>Flat/Apartment</option>
+              <option>Independent House</option>
+              <option>Has Outdoor Space</option>
+              <option value="Other" data-i18n="opt_other">Other</option>
+            </select>
+            <div class="other-field" id="j-env-other"><input placeholder="Describe your environment"></div>
+          </div>
+          <div class="fg"><label data-i18n="label_internet">Internet Speed</label>
+            <select>
+              <option>Fast (50+ Mbps)</option>
+              <option>Medium (10–50 Mbps)</option>
+              <option>Basic (under 10 Mbps)</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label data-i18n="label_exp">Experience Level</label>
+          <div class="toggle-row">
+            <button class="toggle-btn active" onclick="tog(this)" data-i18n="exp_new">New (0–3 months)</button>
+            <button class="toggle-btn" onclick="tog(this)" data-i18n="exp_mid">Experienced (3–12 mo)</button>
+            <button class="toggle-btn" onclick="tog(this)" data-i18n="exp_senior">Expert (1+ year)</button>
+          </div>
+        </div>
+        <div class="fg"><label data-i18n="label_upi">UPI ID</label><input placeholder="yourname@upi"><div class="hint" data-i18n="hint_upi">All payments made to your UPI. No delays.</div></div>
+        <div class="fg"><label data-i18n="label_aadhaar">Aadhaar Verification</label>
+          <div class="toggle-row">
+            <button class="toggle-btn active" onclick="tog(this)" data-i18n="aadhaar_yes">✓ Yes, I'll verify</button>
+            <button class="toggle-btn" onclick="tog(this)" data-i18n="aadhaar_no">Not yet</button>
+          </div>
+          <div class="hint" data-i18n="hint_aadhaar">Aadhaar-verified profiles get 3× more company views</div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Rate -->
+      <div id="jtab-2" style="display:none">
+        <div class="rate-guide">
+          <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;letter-spacing:.5px" data-i18n="rate_guide_title">💡 MARKET RATE GUIDE — INDIA 2026</div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🏠 Household</span><span style="color:var(--green);font-weight:700">₹500–₹1,200/hr</span></div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">📦 Warehouse</span><span style="color:var(--green);font-weight:700">₹700–₹1,800/hr</span></div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🖐️ Dexterity + Sensors</span><span style="color:var(--green);font-weight:700">₹1,000–₹2,500/hr</span></div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🚶 Gait + Motion Capture</span><span style="color:var(--green);font-weight:700">₹1,200–₹3,000/hr</span></div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🏥 Care Tasks</span><span style="color:var(--green);font-weight:700">₹800–₹2,200/hr</span></div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🆕 New Collector (start here)</span><span style="color:var(--green);font-weight:700">₹400–₹700/hr</span></div>
+        </div>
+        <div class="fg"><label data-i18n="label_rate">Your Hourly Rate (₹)</label>
+          <input type="number" id="j-rate" placeholder="850" min="300" oninput="showRateFeedback();livePreview()">
+          <div class="rate-feedback" id="rfb"></div>
+        </div>
+        <div class="fg"><label data-i18n="label_min_eng">Minimum Engagement</label>
+          <div class="toggle-row">
+            <button class="toggle-btn active" onclick="tog(this)">1 hour</button>
+            <button class="toggle-btn" onclick="tog(this)">Half day (4 hrs)</button>
+            <button class="toggle-btn" onclick="tog(this)">Full day (8 hrs)</button>
+          </div>
+        </div>
+        <div class="fg"><label data-i18n="label_managed_open">Open to Managed Service?</label>
+          <div class="toggle-row">
+            <button class="toggle-btn active" onclick="tog(this)" data-i18n="opt_yes">Yes</button>
+            <button class="toggle-btn" onclick="tog(this)">Maybe</button>
+            <button class="toggle-btn" onclick="tog(this)" data-i18n="opt_no">No</button>
+          </div>
+          <div class="hint" data-i18n="hint_managed">Managed Service projects pay 15–20% more</div>
+        </div>
+        <!-- Live Preview -->
+        <div class="preview-card">
+          <div class="preview-label" data-i18n="preview_label">LIVE PROFILE PREVIEW</div>
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <div style="width:44px;height:44px;border-radius:50%;background:#EEF6FD;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">👤</div>
+            <div style="flex:1">
+              <div style="font-size:14px;font-weight:800;color:var(--navy)" id="pv-name">Priya Sharma</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:6px" id="pv-loc">📍 Bangalore</div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:8px;line-height:1.4" id="pv-bio">Homemaker with a smartphone.</div>
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <div><div style="font-size:16px;font-weight:900;color:var(--green)" id="pv-rate">₹850/hr</div><div style="font-size:10px;color:var(--muted)" data-i18n="label_rate">Hourly Rate</div></div>
+                <div style="font-size:11px;color:var(--gold);font-weight:700">★ New</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="divider">
+      <div style="display:flex;gap:8px">
+        <button class="btn-submit" style="background:#888;flex:.4" id="j-back" onclick="prevJTab()" disabled data-i18n="btn_back">← Back</button>
+        <button class="btn-submit" id="j-next" onclick="nextJTab()" data-i18n="btn_next_skills">Next →</button>
+      </div>
+      <div id="join-success" class="success-box">
+        <h3 data-i18n="join_success_title">🎉 Profile Submitted!</h3>
+        <p data-i18n="join_success_msg">Your profile is under review. You'll receive a call/SMS once approved — usually within 24 hours.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ COMPANY REGISTER ══════════════════════════════════════════════════ -->
+<div class="page" id="page-company">
+  <div style="background:var(--navy);padding:28px 40px;color:#fff">
+    <h1 style="font-size:24px;font-weight:800;margin-bottom:4px" data-i18n="company_title">Register Your Company</h1>
+    <p style="color:#B8CCDF;font-size:13px" data-i18n="company_sub">GST registration mandatory for all hiring companies</p>
+  </div>
+  <div class="section">
+    <div class="form-box" style="max-width:720px">
+      <div style="background:#FEF3E2;border:1px solid #F0C878;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:12px;color:#8A5A10">
+        ⚠️ <strong data-i18n="gst_warning_title">GST Mandatory:</strong> <span data-i18n="gst_warning_msg">All companies must provide a valid GSTIN. We verify via GST portal within 24 hours.</span>
+      </div>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_legal_name">Company Legal Name</label><input placeholder="Acme Robotics Private Limited"></div>
+        <div class="fg"><label data-i18n="label_trade_name">Trade Name</label><input placeholder="Acme Robotics"></div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label>GSTIN <span class="gst-badge">MANDATORY</span></label>
+          <input id="gst-input" placeholder="22AAAAA0000A1Z5" maxlength="15" oninput="validateGST()">
+          <div id="gst-status" class="hint"></div>
+        </div>
+        <div class="fg"><label>PAN</label><input placeholder="AAAAA0000A" maxlength="10"></div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label data-i18n="label_industry">Industry</label>
+          <select id="co-industry" onchange="toggleOther('co-industry','co-industry-other')">
+            <option>Robotics / AI</option><option>Manufacturing</option><option>Automotive</option>
+            <option>Logistics</option><option>Healthcare</option><option>Research</option>
+            <option>Technology</option><option value="Other" data-i18n="opt_other">Other</option>
+          </select>
+          <div class="other-field" id="co-industry-other"><input placeholder="Describe your industry"></div>
+        </div>
+        <div class="fg"><label data-i18n="label_co_size">Company Size</label>
+          <select>
+            <option>Startup (1–10)</option><option>Small (11–50)</option>
+            <option>Mid-size (51–200)</option><option>Large (200+)</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label data-i18n="label_address">Registered Address</label><input placeholder="Full address with PIN code"></div>
+      <div class="frow">
+        <div class="fg">
+          <label data-i18n="label_city">City</label>
+          <select id="co-city" onchange="toggleOther('co-city','co-city-other')">
+            <option>Bangalore</option><option>Mumbai</option><option>Delhi NCR</option>
+            <option>Hyderabad</option><option>Pune</option><option>Chennai</option>
+            <option>Ahmedabad</option><option>Kolkata</option>
+            <option value="Other" data-i18n="opt_other">Other</option>
+          </select>
+          <div class="other-field" id="co-city-other"><input placeholder="Enter your city"></div>
+        </div>
+        <div class="fg">
+          <label data-i18n="label_state">State</label>
+          <select id="co-state" onchange="toggleOther('co-state','co-state-other')">
+            <option>Karnataka</option><option>Maharashtra</option><option>Delhi</option>
+            <option>Telangana</option><option>Tamil Nadu</option><option>Gujarat</option>
+            <option>West Bengal</option><option>Rajasthan</option><option>Uttar Pradesh</option>
+            <option>Kerala</option><option value="Other" data-i18n="opt_other">Other</option>
+          </select>
+          <div class="other-field" id="co-state-other"><input placeholder="Enter your state"></div>
+        </div>
+      </div>
+      <hr class="divider">
+      <div class="form-title" style="font-size:15px;margin-bottom:3px" data-i18n="label_contact_person">Primary Contact</div>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_contact_name">Full Name</label><input placeholder="Rahul Mehta"></div>
+        <div class="fg"><label data-i18n="label_designation">Designation</label><input placeholder="CTO / Head of AI"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_email">Work Email</label><input type="email" placeholder="rahul@company.in"></div>
+        <div class="fg"><label data-i18n="label_mobile">Mobile</label><input placeholder="+91 98XXX XXXXX"></div>
+      </div>
+      <hr class="divider">
+      <div class="form-title" style="font-size:15px;margin-bottom:3px" data-i18n="label_data_req">Data Requirements</div>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_task">Task Types Needed</label>
+          <div class="checkbox-group">
+            <label class="cb"><input type="checkbox"> 🏠 Household</label>
+            <label class="cb"><input type="checkbox"> 📦 Warehouse</label>
+            <label class="cb"><input type="checkbox"> 🖐️ Dexterity</label>
+            <label class="cb"><input type="checkbox"> 🚶 Gait</label>
+            <label class="cb"><input type="checkbox"> 🏥 Care</label>
+            <label class="cb"><input type="checkbox"> 🔧 Tools</label>
+          </div>
+        </div>
+        <div class="fg">
+          <label data-i18n="label_budget">Monthly Budget (₹)</label>
+          <select id="co-budget" onchange="toggleOther('co-budget','co-budget-other')">
+            <option>Under ₹50,000</option><option>₹50,000–₹2,00,000</option>
+            <option>₹2,00,000–₹5,00,000</option><option>₹5,00,000+</option>
+            <option value="Other" data-i18n="opt_other">Other / Custom</option>
+          </select>
+          <div class="other-field" id="co-budget-other"><input placeholder="Enter your budget range"></div>
+        </div>
+      </div>
+      <div class="fg"><label data-i18n="label_consent">I agree that</label>
+        <div class="checkbox-group" style="flex-direction:column;gap:7px;margin-top:4px">
+          <label class="cb" style="width:100%"><input type="checkbox"> <span data-i18n="consent1">Collectors will be informed of all data uses before recording</span></label>
+          <label class="cb" style="width:100%"><input type="checkbox"> <span data-i18n="consent2">Biometric/motion data will not be shared with third parties without consent</span></label>
+          <label class="cb" style="width:100%"><input type="checkbox"> <span data-i18n="consent3">We will provide signed NDAs and consent forms to each collector</span></label>
+          <label class="cb" style="width:100%"><input type="checkbox"> <span data-i18n="consent4">GST invoices will be issued correctly per Indian tax law</span></label>
+        </div>
+      </div>
+      <button class="btn-submit" onclick="submitCompany()" data-i18n="btn_register_company">Register Company →</button>
+      <div id="company-success" class="success-box">
+        <h3 data-i18n="company_success_title">✅ Registration Submitted!</h3>
+        <p data-i18n="company_success_msg">We'll verify your GSTIN and activate your account within 24 hours.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MANAGED SERVICE ═══════════════════════════════════════════════════ -->
+<div class="page" id="page-managed">
+  <div style="background:var(--navy);padding:28px 40px;color:#fff">
+    <h1 style="font-size:24px;font-weight:800;margin-bottom:4px" data-i18n="managed_title">⚡ Managed Service</h1>
+    <p style="color:#B8CCDF;font-size:13px" data-i18n="managed_sub">End-to-end data collection — we handle everything</p>
+  </div>
+  <div class="section">
+    <div class="managed-banner">
+      <div>
+        <h2 style="font-size:20px;font-weight:800;margin-bottom:5px" data-i18n="managed_banner_title">You Brief. We Deliver.</h2>
+        <p style="color:#B8CCDF;font-size:13px;line-height:1.5;max-width:380px" data-i18n="managed_banner_desc">Tell us what motion data you need. We recruit, manage, QA-check, annotate, and deliver.</p>
+        <div style="margin-top:10px"><span class="mf" data-i18n="mf1">Dedicated PM</span><span class="mf" data-i18n="mf2">GST Invoice</span><span class="mf" data-i18n="mf3">Legal Compliance</span><span class="mf" data-i18n="mf4">Quality Assurance</span></div>
+      </div>
+      <button class="btn-primary" onclick="document.getElementById('managed-form').scrollIntoView({behavior:'smooth'})" data-i18n="btn_get_quote">Get Quote →</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:36px">
+      <div class="plan-card"><div style="font-size:24px;margin-bottom:8px">🚀</div><div style="font-weight:800;font-size:14px;color:var(--navy);margin-bottom:3px" data-i18n="plan_starter">Starter</div><div style="font-size:22px;font-weight:900;color:var(--green)">₹1,25,000</div><div style="font-size:11px;color:var(--muted);margin-bottom:12px">+ 18% GST</div><div style="font-size:11px;color:var(--muted);line-height:2">✓ 5 collectors<br>✓ 50 hrs footage<br>✓ 1 task type<br>✓ 10-day delivery</div><button class="btn-submit" style="margin-top:14px;font-size:12px;padding:8px;background:var(--blue)" onclick="document.getElementById('managed-form').scrollIntoView({behavior:'smooth'})">Select</button></div>
+      <div class="plan-card featured" style="position:relative;overflow:hidden"><div style="position:absolute;top:0;right:0;background:var(--saffron);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:0 14px 0 8px" data-i18n="popular">POPULAR</div><div style="font-size:24px;margin-bottom:8px">⚡</div><div style="font-weight:800;font-size:14px;color:var(--navy);margin-bottom:3px" data-i18n="plan_growth">Growth</div><div style="font-size:22px;font-weight:900;color:var(--green)">₹4,00,000</div><div style="font-size:11px;color:var(--muted);margin-bottom:12px">+ 18% GST</div><div style="font-size:11px;color:var(--muted);line-height:2">✓ 25 collectors<br>✓ 250 hrs footage<br>✓ 3 task types<br>✓ Full QA+annotation<br>✓ Dedicated PM</div><button class="btn-submit" style="margin-top:14px;font-size:12px;padding:8px" onclick="document.getElementById('managed-form').scrollIntoView({behavior:'smooth'})">Select</button></div>
+      <div class="plan-card"><div style="font-size:24px;margin-bottom:8px">🏢</div><div style="font-weight:800;font-size:14px;color:var(--navy);margin-bottom:3px" data-i18n="plan_enterprise">Enterprise</div><div style="font-size:22px;font-weight:900;color:var(--green)" data-i18n="plan_custom">Custom</div><div style="font-size:11px;color:var(--muted);margin-bottom:12px">GST invoice issued</div><div style="font-size:11px;color:var(--muted);line-height:2">✓ Unlimited collectors<br>✓ All task categories<br>✓ Multi-city/state<br>✓ Custom SLA</div><button class="btn-submit" style="margin-top:14px;font-size:12px;padding:8px;background:var(--navy)" onclick="document.getElementById('managed-form').scrollIntoView({behavior:'smooth'})">Talk to Us</button></div>
+    </div>
+    <div id="managed-form" class="form-box">
+      <div class="form-title" data-i18n="managed_form_title">Request a Quote</div>
+      <div class="form-sub" data-i18n="managed_form_sub">Response within 24 hrs with GST invoice</div>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_co_name">Company Name</label><input placeholder="Acme Robotics Pvt Ltd"></div>
+        <div class="fg"><label>GSTIN <span class="gst-badge">MANDATORY</span></label><input placeholder="22AAAAA0000A1Z5"></div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_contact_name">Contact Name</label><input placeholder="Rahul Mehta"></div>
+        <div class="fg"><label data-i18n="label_mobile">Mobile / WhatsApp</label><input placeholder="+91 98XXX XXXXX"></div>
+      </div>
+      <div class="fg"><label data-i18n="label_task">Tasks Needed</label>
+        <div class="checkbox-group">
+          <label class="cb"><input type="checkbox"> 🏠 Household</label>
+          <label class="cb"><input type="checkbox"> 📦 Warehouse</label>
+          <label class="cb"><input type="checkbox"> 🖐️ Dexterity</label>
+          <label class="cb"><input type="checkbox"> 🚶 Gait</label>
+          <label class="cb"><input type="checkbox"> 🏥 Care</label>
+          <label class="cb"><input type="checkbox"> 🔧 Tools</label>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_hours">Hours Needed</label>
+          <select><option>Under 50 hrs</option><option>50–200 hrs</option><option>200–500 hrs</option><option>500+ hrs</option></select>
+        </div>
+        <div class="fg"><label data-i18n="label_budget">Budget (excl. GST)</label>
+          <select><option>Under ₹1,50,000</option><option>₹1,50,000–₹5,00,000</option><option>₹5,00,000–₹15,00,000</option><option>₹15,00,000+</option></select>
+        </div>
+      </div>
+      <div class="fg"><label data-i18n="label_desc">Project Description</label><textarea placeholder="What robot task are you training? Any regional requirements? Timeline?"></textarea></div>
+      <button class="btn-submit" onclick="showSuccess('managed-success')" data-i18n="btn_get_quote">Request Quote →</button>
+      <div id="managed-success" class="success-box"><h3 data-i18n="managed_success_title">✅ Quote Requested!</h3><p data-i18n="managed_success_msg">Our team will WhatsApp you within 24 hours with a detailed proposal and draft GST invoice.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PROFILE MANAGEMENT ════════════════════════════════════════════════ -->
+<div class="page" id="page-profile-mgmt">
+  <div style="background:var(--navy);padding:28px 40px;color:#fff">
+    <h1 style="font-size:24px;font-weight:800;margin-bottom:4px" data-i18n="myprofile_title">My Profile</h1>
+    <p style="color:#B8CCDF;font-size:13px" data-i18n="myprofile_sub">Manage your profile visibility and settings</p>
+  </div>
+  <div class="section" style="max-width:680px">
+    <!-- Stats -->
+    <div class="profile-mgmt-section">
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div style="width:52px;height:52px;border-radius:50%;background:#EEF6FD;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">👤</div>
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px">
+            <div style="font-size:16px;font-weight:800;color:var(--navy)">Priya Sharma</div>
+            <span class="status-badge status-active" id="profile-status-badge">● Active</span>
+          </div>
+          <div style="font-size:12px;color:var(--muted);margin-bottom:4px">📍 Bangalore, Karnataka &nbsp;·&nbsp; 📞 +91 98XXX XXXXX</div>
+          <div style="font-size:12px;color:var(--muted)">🏠 Household · 🍳 Food Prep &nbsp;·&nbsp; ₹850/hr</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px">
+        <div style="background:var(--light);border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--navy)">12</div><div style="font-size:10px;color:var(--muted)" data-i18n="stat_views">Profile Views</div></div>
+        <div style="background:var(--light);border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--navy)">3</div><div style="font-size:10px;color:var(--muted)" data-i18n="stat_calls">Company Calls</div></div>
+        <div style="background:var(--light);border-radius:10px;padding:10px;text-align:center"><div style="font-size:18px;font-weight:800;color:var(--navy)">₹0</div><div style="font-size:10px;color:var(--muted)" data-i18n="stat_earned">Earned (this month)</div></div>
+      </div>
+    </div>
+
+    <!-- Update Profile -->
+    <div class="profile-mgmt-section">
+      <h3 data-i18n="update_profile">Update Profile</h3>
+      <p data-i18n="update_profile_desc">Changes go live immediately after saving.</p>
+      <div class="frow">
+        <div class="fg"><label data-i18n="label_mobile">Mobile</label><input value="+91 98765 43210"></div>
+        <div class="fg"><label data-i18n="label_upi">UPI ID</label><input value="priya.sharma@upi"></div>
+      </div>
+      <div class="fg"><label data-i18n="label_rate">Hourly Rate (₹)</label><input type="number" placeholder="850"></div>
+      <div class="fg"><label data-i18n="label_bio">Bio</label><textarea>Homemaker with a smartphone, available weekdays. Reliable and punctual.</textarea></div>
+      <button class="btn-submit" style="width:auto;padding:9px 20px;font-size:13px" onclick="showSuccess('update-success')" data-i18n="btn_save">Save Changes</button>
+      <div id="update-success" class="success-box"><h3>✅ Updated!</h3><p data-i18n="update_success_msg">Your profile is live.</p></div>
+    </div>
+
+    <!-- PAUSE — clean, no highlight box -->
+    <div class="profile-mgmt-section">
+      <h3 data-i18n="pause_title">Pause Profile</h3>
+      <p data-i18n="pause_desc">Going away for a while? Pause your profile — companies won't see you, but all your data is saved. Resume anytime with one click.</p>
+      <div class="frow" style="margin-bottom:12px">
+        <div class="fg"><label data-i18n="pause_duration">Pause Duration</label>
+          <select id="pause-duration">
+            <option>1 week</option><option>2 weeks</option><option>1 month</option>
+            <option value="Other" data-i18n="opt_other">Other</option>
+          </select>
+          <div class="other-field" id="pause-dur-other"><input placeholder="e.g. 3 months, until further notice"></div>
+        </div>
+        <div class="fg"><label data-i18n="pause_reason">Reason (optional)</label>
+          <select id="pause-reason-sel" onchange="toggleOther('pause-reason-sel','pause-reason-other')">
+            <option data-i18n="pause_r1">Travelling / personal</option>
+            <option data-i18n="pause_r2">Busy with other work</option>
+            <option data-i18n="pause_r3">Health reasons</option>
+            <option data-i18n="pause_r4">Not enough matching jobs</option>
+            <option value="Other" data-i18n="opt_other">Other</option>
+          </select>
+          <div class="other-field" id="pause-reason-other"><input placeholder="Tell us your reason"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn-small btn-pause" id="pause-btn" onclick="pauseProfile()" data-i18n="btn_pause">⏸ Pause Profile</button>
+        <button class="btn-small btn-resume" id="resume-btn" style="display:none" onclick="resumeProfile()" data-i18n="btn_resume">▶ Resume Profile</button>
+      </div>
+      <div id="pause-success" class="success-box" style="margin-top:10px"><h3 data-i18n="pause_success_title">⏸ Profile Paused</h3><p id="pause-success-msg"></p></div>
+    </div>
+
+    <!-- DELETE — clean, no highlight box -->
+    <div class="profile-mgmt-section">
+      <h3 style="color:var(--red)" data-i18n="delete_title">Delete Profile</h3>
+      <p data-i18n="delete_desc">This permanently removes all your data, reviews, and history. This action cannot be undone. Companies will no longer be able to find you.</p>
+      <div class="fg"><label data-i18n="delete_reason">Reason for leaving</label>
+        <select id="del-reason" onchange="toggleOther('del-reason','del-reason-other')">
+          <option data-i18n="del_r1">Found a full-time job</option>
+          <option data-i18n="del_r2">Not enough income</option>
+          <option data-i18n="del_r3">Privacy concerns</option>
+          <option data-i18n="del_r4">Platform not useful</option>
+          <option value="Other" data-i18n="opt_other">Other</option>
+        </select>
+        <div class="other-field" id="del-reason-other"><input placeholder="Tell us your reason"></div>
+      </div>
+      <div class="fg"><label data-i18n="delete_confirm_label">Type <strong>DELETE</strong> to confirm</label>
+        <input id="delete-confirm" placeholder="DELETE" oninput="checkDelete()">
+      </div>
+      <button class="btn-small btn-delete" id="delete-btn" disabled onclick="deleteProfile()" data-i18n="btn_delete">🗑 Delete My Profile</button>
+    </div>
+  </div>
+</div>
+
+<!-- HIRE MODAL -->
+<div class="modal-overlay" id="hire-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modal-name" style="font-size:17px;font-weight:800;color:var(--navy);margin-bottom:3px">Contact Collector</h3>
+    <div id="modal-phone" style="font-size:13px;color:var(--green);font-weight:700;margin-bottom:14px"></div>
+    <div style="background:#EEF6FD;border-radius:10px;padding:12px;font-size:12px;color:var(--blue);margin-bottom:16px" data-i18n="modal_note">📞 Call directly — number revealed here. All contacts logged for compliance.</div>
+    <div class="fg"><label data-i18n="label_contact_name">Your Name</label><input placeholder="Rahul Mehta"></div>
+    <div class="fg"><label data-i18n="label_co_name">Company</label><input placeholder="Acme Robotics Pvt Ltd"></div>
+    <div class="fg"><label data-i18n="label_desc">Project Description</label><textarea rows="3" placeholder="What do you need recorded?"></textarea></div>
+    <div class="fg"><label data-i18n="label_hours">Proposed Hours</label>
+      <select><option>1–5 hrs</option><option>5–20 hrs</option><option>20–50 hrs</option><option>50+ hrs</option></select>
+    </div>
+    <button class="btn-submit" onclick="showSuccess('modal-success');setTimeout(closeModal,2200)" data-i18n="btn_reveal">📞 Reveal Number & Log Contact</button>
+    <div id="modal-success" class="success-box"><h3 data-i18n="modal_success_title">📞 Number Revealed!</h3><p data-i18n="modal_success_msg">Contact logged for compliance. Call the collector now.</p></div>
+  </div>
+</div>
+
+<footer style="background:var(--navy);color:#9AB8D4;text-align:center;padding:20px;font-size:12px;margin-top:48px">
+  <strong style="color:#fff">Data<span style="color:var(--saffron)">Seva</span></strong> — India's Robot Training Data Platform &nbsp;|&nbsp; Consent-First · GST Compliant · UPI Payments · © 2026
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// SUPABASE CONFIG — replace with your project values
+// ══════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';    // e.g. https://xyzxyz.supabase.co
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // from Supabase → Settings → API
+
+let sb = null;
+try {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} catch(e) { console.warn('Supabase not configured yet — running in demo mode'); }
+
+// ══════════════════════════════════════════════════════════════════
+// I18N — TRANSLATIONS
+// ══════════════════════════════════════════════════════════════════
+const T = {
+  en: {
+    nav_match:"🎯 Find Match", nav_browse:"Browse", nav_managed:"Managed Service",
+    nav_join:"Join as Collector", nav_company:"Company Register", nav_myprofile:"My Profile",
+    home_badge:"🇮🇳 MADE FOR INDIA · ROBOT TRAINING DATA",
+    home_h1:"Earn from Home by<br><span>Training AI Robots</span>",
+    home_p:"India's first gig platform for human motion data collection. Companies hire verified Indian collectors. Set your own rate in ₹.",
+    home_btn_collector:"Become a Collector →", home_btn_company:"Register Your Company",
+    stat_collectors:"Active Collectors", stat_companies:"Verified Companies",
+    stat_rate:"Avg. Rate", stat_states:"States Covered",
+    home_tasks_title:"What Tasks Can You Record?",
+    home_tasks_sub:"All tasks used to train next-gen humanoid robots and AI systems",
+    task_household:"Household Tasks", task_household_desc:"Cooking, cleaning, folding",
+    task_warehouse:"Warehouse Motion", task_warehouse_desc:"Picking, packing, sorting",
+    task_dexterity:"Dexterity Tasks", task_dexterity_desc:"Fine motor, grasping",
+    task_gait:"Gait & Navigation", task_gait_desc:"Walking, stairs, obstacles",
+    task_care:"Care Tasks", task_care_desc:"Elder assist, rehab",
+    task_tools:"Tool Use", task_tools_desc:"Maintenance, assembly",
+    home_cta_match:"🎯 Find Matched Collectors", home_cta_managed:"⚡ Managed Service",
+    match_title:"🎯 Smart Matchmaking", match_sub:"Our algorithm scores every collector for your exact requirement",
+    match_req_title:"Your Requirement", match_req_sub:"More filters = better match score",
+    match_results_label:"collectors matched · sorted by match score",
+    label_task:"Task Category", label_city:"City", label_budget:"Max Budget (₹/hr)",
+    label_rating:"Min Rating", label_equip:"Equipment", label_avail:"Availability",
+    label_lang:"Language", label_exp:"Experience", label_firstname:"First Name",
+    label_lastname:"Last Name", label_mobile:"Mobile Number", label_age:"Age",
+    label_state:"State", label_languages:"Languages Spoken", label_bio:"Bio",
+    label_availability:"Availability", label_tasks:"Task Categories", label_camera:"Camera Equipment",
+    label_sensors:"Wearable Sensors", label_home_env:"Home Environment", label_internet:"Internet Speed",
+    label_upi:"UPI ID", label_aadhaar:"Aadhaar Verification", label_rate:"Your Hourly Rate (₹)",
+    label_min_eng:"Minimum Engagement", label_managed_open:"Open to Managed Service?",
+    label_legal_name:"Company Legal Name", label_trade_name:"Trade Name", label_industry:"Industry",
+    label_co_size:"Company Size", label_address:"Registered Address", label_contact_person:"Primary Contact",
+    label_contact_name:"Full Name", label_designation:"Designation", label_email:"Work Email",
+    label_data_req:"Data Requirements", label_consent:"I agree that", label_co_name:"Company Name",
+    label_hours:"Hours Needed", label_desc:"Project Description",
+    opt_any:"Any", opt_any_city:"Any City", opt_other:"Other",
+    opt_yes:"Yes", opt_no:"No",
+    avail_weekday:"Weekdays", avail_weekend:"Weekends", avail_flexible:"Flexible",
+    exp_new:"New (0–3 months)", exp_mid:"Experienced (3–12 mo)", exp_senior:"Expert (1+ year)",
+    hint_mobile:"Companies call you on this number", hint_upi:"All payments to your UPI. No delays.",
+    hint_aadhaar:"Aadhaar-verified profiles get 3× more views", hint_managed:"Managed Service projects pay 15–20% more",
+    rate_guide_title:"💡 MARKET RATE GUIDE — INDIA 2026", preview_label:"LIVE PROFILE PREVIEW",
+    tab_profile:"1. Profile", tab_skills:"2. Skills", tab_rate:"3. Rate",
+    btn_back:"← Back", btn_next_skills:"Next →", join_title:"Join as a Data Collector",
+    join_sub:"Create your profile · Set your ₹ rate · Companies call you",
+    join_success_title:"🎉 Profile Submitted!", join_success_msg:"Your profile is under review. You'll be notified once approved — usually within 24 hours.",
+    company_title:"Register Your Company", company_sub:"GST registration mandatory for all hiring companies",
+    gst_warning_title:"GST Mandatory:", gst_warning_msg:"All companies must provide a valid GSTIN. We verify via GST portal within 24 hours.",
+    consent1:"Collectors will be informed of all data uses before recording",
+    consent2:"Biometric/motion data will not be shared with third parties without consent",
+    consent3:"We will provide signed NDAs and consent forms to each collector",
+    consent4:"GST invoices will be issued correctly per Indian tax law",
+    btn_register_company:"Register Company →",
+    company_success_title:"✅ Registration Submitted!", company_success_msg:"We'll verify your GSTIN and activate your account within 24 hours.",
+    browse_title:"Browse All Collectors", browse_sub:"9,200+ verified collectors across India",
+    filter_all:"All", managed_title:"⚡ Managed Service", managed_sub:"End-to-end data collection — we handle everything",
+    managed_banner_title:"You Brief. We Deliver.", managed_banner_desc:"Tell us what motion data you need. We recruit, manage, QA-check, annotate, and deliver.",
+    mf1:"Dedicated PM", mf2:"GST Invoice", mf3:"Legal Compliance", mf4:"Quality Assurance",
+    btn_get_quote:"Get Quote →", plan_starter:"Starter", plan_growth:"Growth",
+    plan_enterprise:"Enterprise", plan_custom:"Custom", popular:"POPULAR",
+    managed_form_title:"Request a Quote", managed_form_sub:"Response within 24 hrs with GST invoice",
+    managed_success_title:"✅ Quote Requested!", managed_success_msg:"Our team will WhatsApp you within 24 hours.",
+    myprofile_title:"My Profile", myprofile_sub:"Manage your profile visibility and settings",
+    update_profile:"Update Profile", update_profile_desc:"Changes go live immediately after saving.",
+    btn_save:"Save Changes", update_success_msg:"Your profile is live.",
+    stat_views:"Profile Views", stat_calls:"Company Calls", stat_earned:"Earned (this month)",
+    pause_title:"Pause Profile", pause_desc:"Going away? Pause your profile — companies won't see you, but all your data is saved. Resume anytime.",
+    pause_duration:"Pause Duration", pause_reason:"Reason (optional)",
+    pause_r1:"Travelling / personal", pause_r2:"Busy with other work",
+    pause_r3:"Health reasons", pause_r4:"Not enough matching jobs",
+    btn_pause:"⏸ Pause Profile", btn_resume:"▶ Resume Profile",
+    pause_success_title:"⏸ Profile Paused",
+    delete_title:"Delete Profile", delete_desc:"This permanently removes all your data. This action cannot be undone.",
+    delete_reason:"Reason for leaving", del_r1:"Found a full-time job",
+    del_r2:"Not enough income", del_r3:"Privacy concerns",
+    del_r4:"Platform not useful", delete_confirm_label:"Type DELETE to confirm",
+    btn_delete:"🗑 Delete My Profile",
+    modal_note:"📞 Call directly — number revealed here. All contacts logged for compliance.",
+    btn_reveal:"📞 Reveal Number & Log Contact",
+    modal_success_title:"📞 Number Revealed!", modal_success_msg:"Contact logged. Call the collector now.",
+    nav_tagline:"India's Robot Data Platform",
+  },
+  hi: {
+    nav_match:"🎯 मिलान खोजें", nav_browse:"ब्राउज़ करें", nav_managed:"प्रबंधित सेवा",
+    nav_join:"कलेक्टर बनें", nav_company:"कंपनी पंजीकरण", nav_myprofile:"मेरी प्रोफ़ाइल",
+    home_badge:"🇮🇳 भारत के लिए · रोबोट प्रशिक्षण डेटा",
+    home_h1:"घर से कमाएं<br><span>AI रोबोट को प्रशिक्षित करके</span>",
+    home_p:"भारत का पहला गिग प्लेटफ़ॉर्म जहाँ कंपनियाँ सत्यापित भारतीय कलेक्टरों को काम पर रखती हैं। अपनी दर ₹ में तय करें।",
+    home_btn_collector:"कलेक्टर बनें →", home_btn_company:"अपनी कंपनी पंजीकृत करें",
+    stat_collectors:"सक्रिय कलेक्टर", stat_companies:"सत्यापित कंपनियाँ",
+    stat_rate:"औसत दर", stat_states:"राज्य कवर",
+    home_tasks_title:"आप क्या रिकॉर्ड कर सकते हैं?",
+    task_household:"घरेलू कार्य", task_household_desc:"खाना पकाना, सफाई, तह करना",
+    task_warehouse:"वेयरहाउस मोशन", task_warehouse_desc:"पिकिंग, पैकिंग, छँटाई",
+    task_dexterity:"कुशलता कार्य", task_dexterity_desc:"बारीक मोटर, पकड़",
+    task_gait:"चाल और नेविगेशन", task_gait_desc:"चलना, सीढ़ियाँ, बाधाएँ",
+    task_care:"देखभाल कार्य", task_care_desc:"बुजुर्ग सहायता, पुनर्वास",
+    task_tools:"उपकरण उपयोग", task_tools_desc:"रखरखाव, असेंबली",
+    home_cta_match:"🎯 मिलान वाले कलेक्टर खोजें", home_cta_managed:"⚡ प्रबंधित सेवा",
+    match_title:"🎯 स्मार्ट मिलान", match_sub:"हमारा एल्गोरिदम आपकी आवश्यकता के लिए हर कलेक्टर को स्कोर करता है",
+    join_title:"डेटा कलेक्टर के रूप में जुड़ें", join_sub:"प्रोफ़ाइल बनाएं · ₹ दर तय करें · कंपनियाँ आपको कॉल करेंगी",
+    join_success_title:"🎉 प्रोफ़ाइल सबमिट हो गई!", join_success_msg:"आपकी प्रोफ़ाइल समीक्षाधीन है। स्वीकृति के बाद सूचित किया जाएगा।",
+    company_title:"कंपनी पंजीकरण", gst_warning_title:"GST अनिवार्य:",
+    gst_warning_msg:"सभी कंपनियों को वैध GSTIN देना होगा। हम 24 घंटे में सत्यापित करते हैं।",
+    pause_title:"प्रोफ़ाइल रोकें", pause_desc:"कुछ समय के लिए उपलब्ध नहीं? प्रोफ़ाइल रोकें — कंपनियाँ आपको नहीं देख पाएंगी। कभी भी फिर से शुरू करें।",
+    btn_pause:"⏸ प्रोफ़ाइल रोकें", btn_resume:"▶ पुनः शुरू करें",
+    delete_title:"प्रोफ़ाइल हटाएं", delete_desc:"यह आपका सारा डेटा स्थायी रूप से हटा देगा।",
+    btn_delete:"🗑 प्रोफ़ाइल हटाएं", opt_other:"अन्य",
+    label_city:"शहर", label_state:"राज्य", label_mobile:"मोबाइल नंबर",
+    label_rate:"आपकी प्रति घंटा दर (₹)", label_bio:"परिचय",
+    nav_tagline:"भारत का रोबोट डेटा प्लेटफ़ॉर्म",
+    btn_register_company:"कंपनी पंजीकृत करें →",
+    company_success_title:"✅ पंजीकरण सबमिट!", company_success_msg:"हम 24 घंटे में GSTIN सत्यापित करेंगे।",
+  },
+  ta: {
+    nav_match:"🎯 பொருத்தம் கண்டறி", nav_browse:"உலாவு", nav_managed:"மேலாண்மை சேவை",
+    nav_join:"சேகரிப்பாளராக சேர்", nav_company:"நிறுவனம் பதிவு", nav_myprofile:"என் சுயவிவரம்",
+    home_badge:"🇮🇳 இந்தியாவிற்காக · ரோபோ பயிற்சி தரவு",
+    home_h1:"வீட்டிலிருந்து சம்பாதியுங்கள்<br><span>AI ரோபோக்களை பயிற்றுவிப்பதன் மூலம்</span>",
+    home_p:"கம்பெனிகள் சரிபார்க்கப்பட்ட இந்திய சேகரிப்பாளர்களை பணியமர்த்துகின்றன. உங்கள் சொந்த கட்டணத்தை ₹ இல் நிர்ணயிக்கவும்.",
+    home_btn_collector:"சேகரிப்பாளராக ஆகுங்கள் →", home_btn_company:"நிறுவனத்தை பதிவு செய்யுங்கள்",
+    stat_collectors:"செயலில் உள்ள சேகரிப்பாளர்கள்", stat_companies:"சரிபார்க்கப்பட்ட நிறுவனங்கள்",
+    join_title:"தரவு சேகரிப்பாளராக சேரு", opt_other:"மற்றவை",
+    pause_title:"சுயவிவரத்தை இடைநிறுத்து", btn_pause:"⏸ இடைநிறுத்து",
+    btn_resume:"▶ மீண்டும் தொடங்கு", delete_title:"சுயவிவரத்தை நீக்கு",
+    btn_delete:"🗑 நீக்கு", nav_tagline:"இந்தியாவின் ரோபோ தரவு தளம்",
+    btn_register_company:"நிறுவனம் பதிவு →", gst_warning_title:"GST கட்டாயம்:",
+    gst_warning_msg:"அனைத்து நிறுவனங்களும் செல்லுபடியாகும் GSTIN வழங்க வேண்டும்.",
+  },
+  te: {
+    nav_match:"🎯 సరిపోలిక కనుగొను", nav_browse:"బ్రౌజ్ చేయి", nav_managed:"నిర్వహించబడిన సేవ",
+    nav_join:"సేకరించేవారిగా చేరండి", nav_company:"కంపెనీ నమోదు", nav_myprofile:"నా ప్రొఫైల్",
+    home_badge:"🇮🇳 భారత్ కోసం · రోబోట్ శిక్షణ డేటా",
+    home_h1:"ఇంటి నుండి సంపాదించండి<br><span>AI రోబోట్లకు శిక్షణ ఇవ్వడం ద్వారా</span>",
+    home_btn_collector:"సేకరించేవారిగా మారండి →", home_btn_company:"మీ కంపెనీని నమోదు చేయండి",
+    stat_collectors:"సక్రియ సేకరించేవారు", stat_companies:"ధృవీకరించిన కంపెనీలు",
+    join_title:"డేటా సేకరించేవారిగా చేరండి", opt_other:"ఇతర",
+    pause_title:"ప్రొఫైల్‌ను పాజ్ చేయండి", btn_pause:"⏸ పాజ్ చేయి",
+    btn_resume:"▶ పునఃప్రారంభించు", delete_title:"ప్రొఫైల్ తొలగించు",
+    btn_delete:"🗑 తొలగించు", nav_tagline:"భారతదేశపు రోబోట్ డేటా వేదిక",
+    btn_register_company:"కంపెనీ నమోదు →", gst_warning_title:"GST తప్పనిసరి:",
+    gst_warning_msg:"అన్ని కంపెనీలు చెల్లుబాటు అయ్యే GSTIN అందించాలి.",
+  },
+  kn: {
+    nav_match:"🎯 ಹೊಂದಾಣಿಕೆ ಹುಡುಕಿ", nav_browse:"ಬ್ರೌಸ್ ಮಾಡಿ", nav_managed:"ನಿರ್ವಹಿಸಲ್ಪಟ್ಟ ಸೇವೆ",
+    nav_join:"ಸಂಗ್ರಾಹಕರಾಗಿ ಸೇರಿ", nav_company:"ಕಂಪನಿ ನೋಂದಣಿ", nav_myprofile:"ನನ್ನ ಪ್ರೊಫೈಲ್",
+    home_badge:"🇮🇳 ಭಾರತಕ್ಕಾಗಿ · ರೋಬೋಟ್ ತರಬೇತಿ ಡೇಟಾ",
+    home_h1:"ಮನೆಯಿಂದ ಗಳಿಸಿ<br><span>AI ರೋಬೋಟ್‌ಗಳಿಗೆ ತರಬೇತಿ ನೀಡಿ</span>",
+    home_btn_collector:"ಸಂಗ್ರಾಹಕರಾಗಿ →", home_btn_company:"ನಿಮ್ಮ ಕಂಪನಿ ನೋಂದಾಯಿಸಿ",
+    stat_collectors:"ಸಕ್ರಿಯ ಸಂಗ್ರಾಹಕರು", stat_companies:"ಪರಿಶೀಲಿಸಲಾದ ಕಂಪನಿಗಳು",
+    join_title:"ಡೇಟಾ ಸಂಗ್ರಾಹಕರಾಗಿ ಸೇರಿ", opt_other:"ಇತರೆ",
+    pause_title:"ಪ್ರೊಫೈಲ್ ವಿರಾಮ", btn_pause:"⏸ ವಿರಾಮ", btn_resume:"▶ ಮತ್ತೆ ಪ್ರಾರಂಭಿಸಿ",
+    delete_title:"ಪ್ರೊಫೈಲ್ ಅಳಿಸಿ", btn_delete:"🗑 ಅಳಿಸಿ",
+    nav_tagline:"ಭಾರತದ ರೋಬೋಟ್ ಡೇಟಾ ವೇದಿಕೆ",
+    btn_register_company:"ಕಂಪನಿ ನೋಂದಾಯಿಸಿ →", gst_warning_title:"GST ಕಡ್ಡಾಯ:",
+    gst_warning_msg:"ಎಲ್ಲಾ ಕಂಪನಿಗಳು ಮಾನ್ಯ GSTIN ಒದಗಿಸಬೇಕು.",
+  },
+  ml: {
+    nav_match:"🎯 പൊരുത്തം കണ്ടെത്തുക", nav_browse:"ബ്രൗസ് ചെയ്യുക", nav_managed:"മാനേജ്ഡ് സേവനം",
+    nav_join:"ശേഖരണക്കാരനായി ചേരുക", nav_company:"കമ്പനി രജിസ്ട്രേഷൻ", nav_myprofile:"എന്റെ പ്രൊഫൈൽ",
+    home_badge:"🇮🇳 ഇന്ത്യക്കായി · റോബോട്ട് പരിശീലന ഡേറ്റ",
+    home_h1:"വീട്ടിൽ നിന്ന് സമ്പാദിക്കൂ<br><span>AI റോബോട്ടുകളെ പരിശീലിപ്പിക്കൂ</span>",
+    home_btn_collector:"ശേഖരണക്കാരനാകൂ →", home_btn_company:"കമ്പനി രജിസ്റ്റർ ചെയ്യൂ",
+    stat_collectors:"സജീവ ശേഖരണക്കാർ", stat_companies:"പരിശോധിച്ച കമ്പനികൾ",
+    join_title:"ഡേറ്റ ശേഖരണക്കാരനായി ചേരുക", opt_other:"മറ്റ്",
+    pause_title:"പ്രൊഫൈൽ താൽക്കാലികമായി നിർത്തുക", btn_pause:"⏸ നിർത്തുക",
+    btn_resume:"▶ പുനരാരംഭിക്കുക", delete_title:"പ്രൊഫൈൽ ഇല്ലാതാക്കുക",
+    btn_delete:"🗑 ഇല്ലാതാക്കുക", nav_tagline:"ഇന്ത്യയുടെ റോബോട്ട് ഡേറ്റ പ്ലാറ്റ്ഫോം",
+    btn_register_company:"കമ്പനി രജിസ്റ്റർ ചെയ്യൂ →", gst_warning_title:"GST നിർബന്ധം:",
+    gst_warning_msg:"എല്ലാ കമ്പനികളും സാധുവായ GSTIN നൽകണം.",
+  },
+  mr: { nav_match:"🎯 जुळणी शोधा", nav_browse:"ब्राउझ करा", nav_managed:"व्यवस्थापित सेवा", nav_join:"संग्राहक म्हणून जुळा", nav_company:"कंपनी नोंदणी", nav_myprofile:"माझी प्रोफाइल", home_btn_collector:"संग्राहक बना →", home_btn_company:"कंपनी नोंदवा", stat_collectors:"सक्रिय संग्राहक", stat_companies:"सत्यापित कंपन्या", join_title:"डेटा संग्राहक म्हणून सामील व्हा", opt_other:"इतर", pause_title:"प्रोफाइल थांबवा", btn_pause:"⏸ थांबवा", btn_resume:"▶ पुन्हा सुरू करा", delete_title:"प्रोफाइल हटवा", btn_delete:"🗑 हटवा", nav_tagline:"भारताचे रोबोट डेटा व्यासपीठ", btn_register_company:"कंपनी नोंदणी →", gst_warning_title:"GST अनिवार्य:", gst_warning_msg:"सर्व कंपन्यांनी वैध GSTIN द्यावे." },
+  bn: { nav_match:"🎯 মিল খুঁজুন", nav_browse:"ব্রাউজ করুন", nav_managed:"পরিচালিত পরিষেবা", nav_join:"সংগ্রাহক হিসেবে যোগ দিন", nav_company:"কোম্পানি নিবন্ধন", nav_myprofile:"আমার প্রোফাইল", home_btn_collector:"সংগ্রাহক হন →", home_btn_company:"কোম্পানি নিবন্ধন করুন", stat_collectors:"সক্রিয় সংগ্রাহক", stat_companies:"যাচাইকৃত কোম্পানি", join_title:"ডেটা সংগ্রাহক হিসেবে যোগ দিন", opt_other:"অন্যান্য", pause_title:"প্রোফাইল বিরতি দিন", btn_pause:"⏸ বিরতি", btn_resume:"▶ পুনরায় শুরু করুন", delete_title:"প্রোফাইল মুছুন", btn_delete:"🗑 মুছুন", nav_tagline:"ভারতের রোবট ডেটা প্ল্যাটফর্ম", btn_register_company:"কোম্পানি নিবন্ধন →", gst_warning_title:"GST বাধ্যতামূলক:", gst_warning_msg:"সমস্ত কোম্পানিকে বৈধ GSTIN প্রদান করতে হবে।" },
+  gu: { nav_match:"🎯 મેળ શોધો", nav_browse:"બ્રાઉઝ કરો", nav_managed:"મેનેજ સેવા", nav_join:"સંગ્રાહક બનો", nav_company:"કંપની નોંધણી", nav_myprofile:"મારી પ્રોફાઇલ", home_btn_collector:"સંગ્રાહક બનો →", home_btn_company:"કંપની નોંધો", stat_collectors:"સક્રિય સંગ્રાહક", stat_companies:"ચકાસાયેલ કંપનીઓ", join_title:"ડેટા સંગ્રાહક તરીકે જોડાઓ", opt_other:"અન્ય", pause_title:"પ્રોફાઇલ અટકાવો", btn_pause:"⏸ અટકાવો", btn_resume:"▶ ફરી શરૂ", delete_title:"પ્રોફાઇલ કાઢી નાખો", btn_delete:"🗑 કાઢી નાખો", nav_tagline:"ભારતનું રોબોટ ડેટા પ્લેટફૉર્મ", btn_register_company:"કંપની નોંધો →", gst_warning_title:"GST ફરજિયાત:", gst_warning_msg:"તમામ કંપનીઓએ માન્ય GSTIN આપવી આવશ્યક છે." },
+  pa: { nav_match:"🎯 ਮੇਲ ਲੱਭੋ", nav_browse:"ਬ੍ਰਾਊਜ਼ ਕਰੋ", nav_managed:"ਪ੍ਰਬੰਧਿਤ ਸੇਵਾ", nav_join:"ਸੰਗ੍ਰਹਿਕ ਬਣੋ", nav_company:"ਕੰਪਨੀ ਰਜਿਸਟ੍ਰੇਸ਼ਨ", nav_myprofile:"ਮੇਰੀ ਪ੍ਰੋਫਾਈਲ", home_btn_collector:"ਸੰਗ੍ਰਹਿਕ ਬਣੋ →", home_btn_company:"ਕੰਪਨੀ ਰਜਿਸਟਰ ਕਰੋ", stat_collectors:"ਸਰਗਰਮ ਸੰਗ੍ਰਹਿਕ", stat_companies:"ਪ੍ਰਮਾਣਿਤ ਕੰਪਨੀਆਂ", join_title:"ਡੇਟਾ ਸੰਗ੍ਰਹਿਕ ਵਜੋਂ ਸ਼ਾਮਲ ਹੋਵੋ", opt_other:"ਹੋਰ", pause_title:"ਪ੍ਰੋਫਾਈਲ ਰੋਕੋ", btn_pause:"⏸ ਰੋਕੋ", btn_resume:"▶ ਦੁਬਾਰਾ ਸ਼ੁਰੂ", delete_title:"ਪ੍ਰੋਫਾਈਲ ਮਿਟਾਓ", btn_delete:"🗑 ਮਿਟਾਓ", nav_tagline:"ਭਾਰਤ ਦਾ ਰੋਬੋਟ ਡੇਟਾ ਪਲੇਟਫਾਰਮ", btn_register_company:"ਕੰਪਨੀ ਰਜਿਸਟਰ →", gst_warning_title:"GST ਲਾਜ਼ਮੀ:", gst_warning_msg:"ਸਾਰੀਆਂ ਕੰਪਨੀਆਂ ਲਈ ਵੈਧ GSTIN ਜ਼ਰੂਰੀ ਹੈ।" },
+  or: { nav_match:"🎯 ମେଳ ଖୋଜ", nav_browse:"ବ୍ରାଉଜ୍ କରନ୍ତୁ", nav_managed:"ପରିଚାଳିତ ସେବା", nav_join:"ସଂଗ୍ରାହକ ଭାବରେ ଯୋଗ", nav_company:"କମ୍ପାନୀ ପଞ୍ଜୀକରଣ", nav_myprofile:"ମୋ ପ୍ରୋଫାଇଲ୍", home_btn_collector:"ସଂଗ୍ରାହକ ହୁଅ →", home_btn_company:"କମ୍ପାନୀ ପଞ୍ଜୀ ଦିଅ", opt_other:"ଅନ୍ୟ", pause_title:"ପ୍ରୋଫାଇଲ୍ ବିରତି ଦିଅ", btn_pause:"⏸ ବିରତି", btn_resume:"▶ ପୁଣି ଆରମ୍ଭ", delete_title:"ପ୍ରୋଫାଇଲ୍ ଡିଲିଟ୍ କର", btn_delete:"🗑 ଡିଲିଟ୍", nav_tagline:"ଭାରତର ରୋବଟ୍ ଡାଟା ପ୍ଲାଟଫର୍ମ", btn_register_company:"କମ୍ପାନୀ ପଞ୍ଜୀ →", gst_warning_title:"GST ଆବଶ୍ୟକ:", gst_warning_msg:"ସମସ୍ତ କମ୍ପାନୀ ବୈଧ GSTIN ଦେବା ଆବଶ୍ୟକ।" },
+  as: { nav_match:"🎯 মিল বিচাৰক", nav_browse:"ব্ৰাউজ কৰক", nav_managed:"পৰিচালিত সেৱা", nav_join:"সংগ্ৰাহক হওক", nav_company:"কোম্পানী পঞ্জীয়ন", nav_myprofile:"মোৰ প্ৰফাইল", home_btn_collector:"সংগ্ৰাহক হওক →", home_btn_company:"কোম্পানী পঞ্জীয়ন কৰক", opt_other:"অন্যান্য", pause_title:"প্ৰফাইল বিৰতি দিয়ক", btn_pause:"⏸ বিৰতি", btn_resume:"▶ পুনৰ আৰম্ভ", delete_title:"প্ৰফাইল মচক", btn_delete:"🗑 মচক", nav_tagline:"ভাৰতৰ ৰোবট ডেটা প্লেটফৰ্ম", btn_register_company:"কোম্পানী পঞ্জীয়ন →", gst_warning_title:"GST বাধ্যতামূলক:", gst_warning_msg:"সকলো কোম্পানীয়ে বৈধ GSTIN দিব লাগিব।" },
+};
+
+let currentLang = 'en';
+
+function t(key) {
+  return (T[currentLang] && T[currentLang][key]) || T['en'][key] || key;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    const val = t(key);
+    if (el.tagName === 'OPTION') { el.textContent = val; }
+    else { el.innerHTML = val; }
+  });
+  document.getElementById('nav-tagline').textContent = t('nav_tagline');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// COLLECTOR DATA (demo)
+// ══════════════════════════════════════════════════════════════════
+const COLLECTORS = [
+  {id:1,name:"Priya Sharma",city:"Bangalore",state:"Karnataka",emoji:"👩",color:"#EEF6FD",tasks:["household","food"],tags:["🏠 Household","🍳 Food Prep"],rate:850,rating:4.9,reviews:34,equip:"camera",avail:"weekday",lang:"Kannada",exp:"mid",aadhaar:true,managed:true,phone:"+91 98765 43210"},
+  {id:2,name:"Ravi Kumar",city:"Chennai",state:"Tamil Nadu",emoji:"👨",color:"#EAF7EE",tasks:["warehouse","gait"],tags:["📦 Warehouse","🚶 Gait"],rate:1100,rating:4.8,reviews:21,equip:"mount",avail:"flexible",lang:"Tamil",exp:"mid",aadhaar:true,managed:false,phone:"+91 97654 32109"},
+  {id:3,name:"Sunita Devi",city:"Delhi NCR",state:"Delhi",emoji:"👩",color:"#FEF3E2",tasks:["household","care"],tags:["🏠 Household","🏥 Care"],rate:650,rating:5.0,reviews:12,equip:"camera",avail:"weekday",lang:"Hindi",exp:"new",aadhaar:false,managed:false,phone:"+91 96543 21098"},
+  {id:4,name:"Arjun Nair",city:"Kochi",state:"Kerala",emoji:"👨",color:"#F3EEF8",tasks:["dexterity","tools"],tags:["🖐️ Dexterity","🔧 Tool Use"],rate:1800,rating:4.9,reviews:58,equip:"wearable",avail:"weekend",lang:"Malayalam",exp:"senior",aadhaar:true,managed:true,phone:"+91 95432 10987"},
+  {id:5,name:"Meena Iyer",city:"Hyderabad",state:"Telangana",emoji:"👩",color:"#EAF7EE",tasks:["food","household"],tags:["🍳 Food Prep","🏠 Household"],rate:750,rating:4.7,reviews:29,equip:"camera",avail:"weekday",lang:"Telugu",exp:"mid",aadhaar:true,managed:false,phone:"+91 94321 09876"},
+  {id:6,name:"Vikram Singh",city:"Jaipur",state:"Rajasthan",emoji:"👨",color:"#EEF6FD",tasks:["warehouse","tools"],tags:["📦 Warehouse","🔧 Tool Use"],rate:900,rating:4.6,reviews:44,equip:"mount",avail:"flexible",lang:"Hindi",exp:"mid",aadhaar:true,managed:true,phone:"+91 93210 98765"},
+  {id:7,name:"Lakshmi Menon",city:"Pune",state:"Maharashtra",emoji:"👩",color:"#FEF3E2",tasks:["care","household"],tags:["🏥 Care","🏠 Household"],rate:1000,rating:4.8,reviews:67,equip:"camera",avail:"weekday",lang:"Marathi",exp:"senior",aadhaar:true,managed:true,phone:"+91 92109 87654"},
+  {id:8,name:"Suresh Babu",city:"Bangalore",state:"Karnataka",emoji:"👨",color:"#EAF7EE",tasks:["gait","warehouse"],tags:["🚶 Gait","📦 Warehouse"],rate:1400,rating:5.0,reviews:8,equip:"mocap",avail:"weekend",lang:"Kannada",exp:"senior",aadhaar:true,managed:false,phone:"+91 91098 76543"},
+  {id:9,name:"Anita Rao",city:"Mumbai",state:"Maharashtra",emoji:"👩",color:"#F3EEF8",tasks:["dexterity","food"],tags:["🖐️ Dexterity","🍳 Food Prep"],rate:1300,rating:4.9,reviews:31,equip:"wearable",avail:"flexible",lang:"Marathi",exp:"mid",aadhaar:true,managed:true,phone:"+91 90987 65432"},
+  {id:10,name:"Manoj Pandey",city:"Lucknow",state:"Uttar Pradesh",emoji:"👨",color:"#EEF6FD",tasks:["household","care"],tags:["🏠 Household","🏥 Care"],rate:580,rating:4.5,reviews:15,equip:"camera",avail:"weekday",lang:"Hindi",exp:"new",aadhaar:false,managed:false,phone:"+91 89876 54321"},
+  {id:11,name:"Deepa Krishnan",city:"Chennai",state:"Tamil Nadu",emoji:"👩",color:"#EAF7EE",tasks:["food","household"],tags:["🍳 Food Prep","🏠 Household"],rate:720,rating:4.8,reviews:22,equip:"camera",avail:"weekday",lang:"Tamil",exp:"mid",aadhaar:true,managed:false,phone:"+91 88765 43210"},
+  {id:12,name:"Ramesh Gupta",city:"Ahmedabad",state:"Gujarat",emoji:"👨",color:"#FEF3E2",tasks:["warehouse","gait","tools"],tags:["📦 Warehouse","🚶 Gait"],rate:1050,rating:4.7,reviews:39,equip:"mount",avail:"flexible",lang:"Gujarati",exp:"mid",aadhaar:true,managed:true,phone:"+91 87654 32109"},
+];
+
+// ══════════════════════════════════════════════════════════════════
+// MATCHMAKING ALGORITHM
+// ══════════════════════════════════════════════════════════════════
+function calcScore(c, req) {
+  let s = 0;
+  const {task,city,budget,rating,equip,avail,lang,exp} = req;
+  if (!task || c.tasks.includes(task)) s += 30; // Task — highest weight
+  if (!city || c.city === city) s += 20;         // Location
+  if (c.rate <= parseInt(budget)) s += 20;        // Budget fit
+  else if (c.rate <= parseInt(budget)*1.15) s += 8; // within 15% over
+  if (c.rating >= parseFloat(rating)) s += 10;   // Rating
+  const eMap = {camera:["camera","mount","wearable","mocap"],mount:["mount","wearable","mocap"],wearable:["wearable","mocap"],mocap:["mocap"]};
+  if (!equip || (eMap[equip]||[]).includes(c.equip)) s += 8; // Equipment
+  if (!avail || c.avail === avail || c.avail === "flexible") s += 6; // Availability
+  if (!lang || c.lang === lang) s += 4;           // Language
+  if (!exp || c.exp === exp) s += 6;
+  else if (exp === "new" && c.exp !== "new") s += 3;
+  if (c.aadhaar) s += 5;                          // Aadhaar bonus
+  return Math.min(s, 100);
+}
+
+function scoreClass(s) { return s>=75?'':s>=50?'medium':'low'; }
+function scoreTxt(s) { return s>=75?'🟢 '+s+'% Match':s>=50?'🟡 '+s+'% Match':'🔴 '+s+'% Match'; }
+
+function runMatch() {
+  const req = {
+    task:document.getElementById('req-task').value,
+    city:document.getElementById('req-city').value,
+    budget:document.getElementById('req-budget').value||99999,
+    rating:document.getElementById('req-rating').value||0,
+    equip:document.getElementById('req-equip').value,
+    avail:document.getElementById('req-avail').value,
+    lang:document.getElementById('req-lang').value,
+    exp:document.getElementById('req-exp').value,
+  };
+  const scored = COLLECTORS.map(c=>({...c,score:calcScore(c,req)}))
+    .filter(c=>c.score>0).sort((a,b)=>b.score-a.score);
+  document.getElementById('match-count').textContent = scored.length;
+  renderGrid('match-grid', scored, true);
+  const tags=[];
+  if(req.task)tags.push(req.task); if(req.city)tags.push(req.city);
+  if(req.budget<99999)tags.push('Under ₹'+req.budget+'/hr'); if(req.lang)tags.push(req.lang);
+  const crit=document.getElementById('active-criteria');
+  if(tags.length){crit.style.display='flex';crit.innerHTML='<span style="font-size:11px;color:#B8CCDF;margin-right:4px">Filtering by:</span>'+tags.map(t=>`<span class="crit-tag">${t}</span>`).join('');}
+  else crit.style.display='none';
+}
+
+function renderGrid(gid, list, showScore) {
+  const g = document.getElementById(gid);
+  if(!list.length){g.innerHTML='<div style="color:var(--muted);font-size:13px;padding:16px">No collectors match this criteria.</div>';return;}
+  g.innerHTML = list.map(c=>`
+  <div class="card">
+    ${showScore?`<div class="match-score ${scoreClass(c.score)}">${scoreTxt(c.score)}</div>`:''}
+    <div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">
+      ${c.managed?'<span style="font-size:10px;font-weight:700;background:#E8F4FD;color:var(--blue);padding:2px 8px;border-radius:10px">⚡ Managed OK</span>':''}
+      ${c.aadhaar?'<span style="font-size:10px;font-weight:700;background:#EAF7EE;color:var(--green);padding:2px 8px;border-radius:10px">✓ Aadhaar</span>':''}
+    </div>
+    <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px">
+      <div style="width:42px;height:42px;border-radius:50%;background:${c.color};display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">${c.emoji}</div>
+      <div><div style="font-size:14px;font-weight:800;color:var(--navy)">${c.name}</div>
+      <div style="font-size:11px;color:var(--muted)">📍 ${c.city}, ${c.state}</div>
+      <div style="font-size:11px;color:var(--muted)">🗣 ${c.lang} · ${c.exp==='new'?'New':c.exp==='mid'?'Experienced':'Expert'}</div></div>
+    </div>
+    <div class="card-tags">${c.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:8px">
+      <div><div class="rate">₹${c.rate.toLocaleString('en-IN')}/hr</div><div style="font-size:10px;color:var(--muted)">Hourly Rate</div></div>
+      <div style="text-align:right"><div class="rating">★ ${c.rating}</div><div style="font-size:10px;color:var(--muted)">${c.reviews} reviews</div></div>
+    </div>
+    <button onclick="openHire(${c.id})" style="width:100%;margin-top:10px;background:var(--navy);color:#fff;font-weight:700;font-size:12px;border:none;padding:8px;border-radius:8px;cursor:pointer">📞 View Contact</button>
+  </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='match') runMatch();
+  if(id==='browse') renderGrid('browse-grid', COLLECTORS, false);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// "OTHER" FIELD TOGGLE
+// ══════════════════════════════════════════════════════════════════
+function toggleOther(selId, fieldId) {
+  const sel = document.getElementById(selId);
+  const field = document.getElementById(fieldId);
+  if(!sel||!field) return;
+  if(sel.value === 'Other') field.classList.add('show');
+  else field.classList.remove('show');
+}
+
+// Also handle pause duration "Other"
+document.addEventListener('change', function(e) {
+  if(e.target.id === 'pause-duration') {
+    const f = document.getElementById('pause-dur-other');
+    if(f) { if(e.target.value==='Other') f.classList.add('show'); else f.classList.remove('show'); }
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// JOIN FORM TABS
+// ══════════════════════════════════════════════════════════════════
+let jtab = 0;
+const JLABELS = ['Next: Skills →','Next: Set Rate →','Create My Profile 🎉'];
+
+function goTab(n) {
+  ['jtab-0','jtab-1','jtab-2'].forEach((t,i)=>document.getElementById(t).style.display=i===n?'block':'none');
+  document.querySelectorAll('#page-join .form-tab').forEach((t,i)=>t.classList.toggle('active',i===n));
+  jtab=n;
+  document.getElementById('j-next').textContent = JLABELS[n];
+  document.getElementById('j-back').disabled = n===0;
+}
+function nextJTab() { if(jtab<2) goTab(jtab+1); else submitCollector(); }
+function prevJTab() { if(jtab>0) goTab(jtab-1); }
+
+// ══════════════════════════════════════════════════════════════════
+// SUPABASE SUBMISSIONS
+// ══════════════════════════════════════════════════════════════════
+async function submitCollector() {
+  const fn = document.getElementById('j-fn').value.trim();
+  const ln = document.getElementById('j-ln').value.trim();
+  const mob = document.getElementById('j-mob').value.trim();
+  const rate = parseInt(document.getElementById('j-rate').value);
+  const city = document.getElementById('j-city').value;
+  const cityOther = city==='Other' ? document.getElementById('j-city-other').querySelector('input')?.value : null;
+  if(!fn||!ln||!mob||!rate) { alert('Please fill in all required fields (Name, Mobile, Rate)'); return; }
+
+  const payload = {
+    first_name: fn, last_name: ln, mobile: mob,
+    city: cityOther||city,
+    state: document.getElementById('j-state').value,
+    hourly_rate: rate,
+    bio: document.getElementById('j-bio').value,
+    status: 'pending'
+  };
+
+  if(sb && SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
+    try {
+      const {error} = await sb.from('collectors').insert([payload]);
+      if(error) throw error;
+    } catch(e) { console.error('Supabase error:', e.message); }
+  } else {
+    console.log('Demo mode — would submit:', payload);
+  }
+  showSuccess('join-success');
+  document.getElementById('j-next').style.display='none';
+}
+
+async function submitCompany() {
+  const gstin = document.getElementById('gst-input').value.trim();
+  const re = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  if(!re.test(gstin)) { alert('Please enter a valid GSTIN before submitting.'); return; }
+  showSuccess('company-success');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// LIVE PREVIEW
+// ══════════════════════════════════════════════════════════════════
+function livePreview() {
+  const fn=document.getElementById('j-fn')?.value||'Priya';
+  const ln=document.getElementById('j-ln')?.value||'Sharma';
+  const city=document.getElementById('j-city')?.value||'Bangalore';
+  const bio=document.getElementById('j-bio')?.value||'Homemaker with a smartphone.';
+  const rate=document.getElementById('j-rate')?.value||'850';
+  if(document.getElementById('pv-name')) document.getElementById('pv-name').textContent=fn+' '+ln;
+  if(document.getElementById('pv-loc')) document.getElementById('pv-loc').textContent='📍 '+(city==='Other'?'Your City':city);
+  if(document.getElementById('pv-bio')) document.getElementById('pv-bio').textContent=bio.slice(0,80)+(bio.length>80?'...':'');
+  if(document.getElementById('pv-rate')) document.getElementById('pv-rate').textContent='₹'+parseInt(rate||850).toLocaleString('en-IN')+'/hr';
+}
+
+function showRateFeedback() {
+  const v=parseInt(document.getElementById('j-rate').value);
+  const fb=document.getElementById('rfb');
+  if(!v){fb.style.display='none';return;}
+  fb.style.display='block';livePreview();
+  if(v<400){fb.style.background='#FEF0F0';fb.style.color='#C0392B';fb.textContent='⚠️ Too low — minimum recommended ₹400/hr.';}
+  else if(v<=800){fb.style.background='#EAF7EE';fb.style.color='#1A7A40';fb.textContent='✅ Competitive for a new collector. Good starting point.';}
+  else if(v<=1500){fb.style.background='#EEF6FD';fb.style.color='#2C5F8A';fb.textContent='📊 Mid-range — strong rate for experienced collectors.';}
+  else if(v<=2500){fb.style.background='#EEF6FD';fb.style.color='#2C5F8A';fb.textContent='📊 Premium rate — for dexterity/motion capture specialists.';}
+  else{fb.style.background='#FEF3E2';fb.style.color='#9A6010';fb.textContent='⚠️ Very high — only viable with full motion capture setup.';}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// GST VALIDATION
+// ══════════════════════════════════════════════════════════════════
+function validateGST() {
+  const v=document.getElementById('gst-input').value.toUpperCase();
+  document.getElementById('gst-input').value=v;
+  const el=document.getElementById('gst-status');
+  const re=/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+  if(!v.length){el.textContent='';return;}
+  if(re.test(v)){el.style.color='var(--green)';el.textContent='✓ Valid GSTIN format';}
+  else if(v.length<15){el.style.color='var(--muted)';el.textContent='GSTIN is 15 characters (e.g. 29ABCDE1234F1Z5)';}
+  else{el.style.color='var(--red)';el.textContent='✗ Invalid GSTIN — please check';}
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PROFILE MGMT
+// ══════════════════════════════════════════════════════════════════
+function pauseProfile() {
+  const dur=document.getElementById('pause-duration').value;
+  const durTxt = dur==='Other'?(document.getElementById('pause-dur-other').querySelector('input')?.value||'custom period'):dur;
+  document.getElementById('profile-status-badge').textContent='⏸ Paused';
+  document.getElementById('profile-status-badge').className='status-badge status-paused';
+  document.getElementById('resume-btn').style.display='inline-block';
+  document.getElementById('pause-btn').style.display='none';
+  document.getElementById('pause-success-msg').textContent='Paused for '+durTxt+'. Companies won\'t see your profile. Resume anytime.';
+  showSuccess('pause-success');
+}
+function resumeProfile() {
+  document.getElementById('profile-status-badge').textContent='● Active';
+  document.getElementById('profile-status-badge').className='status-badge status-active';
+  document.getElementById('resume-btn').style.display='none';
+  document.getElementById('pause-btn').style.display='inline-block';
+  document.getElementById('pause-success').classList.remove('show');
+}
+function checkDelete() {
+  const btn=document.getElementById('delete-btn');
+  btn.disabled=document.getElementById('delete-confirm').value!=='DELETE';
+}
+function deleteProfile() {
+  if(confirm('This will permanently delete all your data. Are you sure?')) {
+    document.getElementById('page-profile-mgmt').innerHTML='<div style="text-align:center;padding:72px 20px"><div style="font-size:44px;margin-bottom:14px">👋</div><h2 style="color:var(--navy);margin-bottom:6px">Profile Deleted</h2><p style="color:var(--muted);font-size:13px">Your profile and all data has been permanently removed.</p><button class="btn-nav" style="margin-top:18px" onclick="showPage(\'home\')">Go to Home</button></div>';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// MISC
+// ══════════════════════════════════════════════════════════════════
+function tog(el){el.classList.toggle('active')}
+function openHire(id){const c=COLLECTORS.find(x=>x.id===id);document.getElementById('modal-name').textContent='Contact '+c.name;document.getElementById('modal-phone').textContent='📞 '+c.phone+' · ₹'+c.rate.toLocaleString('en-IN')+'/hr';document.getElementById('hire-modal').classList.add('show')}
+function closeModal(){document.getElementById('hire-modal').classList.remove('show');document.getElementById('modal-success').classList.remove('show')}
+function showSuccess(id){const el=document.getElementById(id);if(el){el.classList.add('show');el.scrollIntoView({behavior:'smooth'})}}
+function filterBrowse(btn,type){document.querySelectorAll('#page-browse .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderGrid('browse-grid',type==='all'?COLLECTORS:COLLECTORS.filter(c=>c.tasks.includes(type)),false)}
+function filterBrowseSearch(){const q=document.getElementById('browse-search').value.toLowerCase();renderGrid('browse-grid',COLLECTORS.filter(c=>c.name.toLowerCase().includes(q)||c.city.toLowerCase().includes(q)||c.tags.join(' ').toLowerCase().includes(q)),false)}
+
+// INIT
+runMatch();
+renderGrid('browse-grid', COLLECTORS, false);
+</script>
+</body>
+</html>
