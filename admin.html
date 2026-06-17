@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataSeva Admin Panel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--navy:#1A3A5C;--blue:#2C5F8A;--sky:#4A90C4;--saffron:#FF6B00;--green:#1A7A40;--red:#C0392B;--light:#F4F8FC;--border:#DDE6EF;--text:#1A2A3A;--muted:#6B84A0;--gold:#E8A020}
+body{font-family:'Segoe UI',sans-serif;background:#0F1E30;color:var(--text);min-height:100vh}
+
+/* LOGIN */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#0F1E30,#1A3A5C)}
+.login-box{background:#fff;border-radius:20px;padding:40px;width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.4)}
+.login-logo{font-size:28px;font-weight:900;color:var(--navy);margin-bottom:4px}
+.login-logo span{color:var(--saffron)}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
+.login-box input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;margin-bottom:12px}
+.login-box input:focus{outline:none;border-color:var(--sky)}
+.login-btn{width:100%;background:var(--navy);color:#fff;font-weight:700;font-size:14px;border:none;padding:12px;border-radius:10px;cursor:pointer;transition:.2s}
+.login-btn:hover{background:var(--blue)}
+.login-error{color:var(--red);font-size:12px;margin-top:8px;display:none}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh}
+.sidebar{width:220px;background:#0F1E30;position:fixed;top:0;left:0;bottom:0;overflow-y:auto;border-right:1px solid rgba(255,255,255,.08)}
+.sidebar-logo{padding:20px 18px 16px;font-size:18px;font-weight:900;color:#fff}
+.sidebar-logo span{color:var(--saffron)}
+.sidebar-logo small{display:block;font-size:10px;color:#6B84A0;font-weight:400}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 18px;color:#9AB8D4;font-size:13px;cursor:pointer;transition:.2s;border-left:3px solid transparent}
+.nav-item:hover,.nav-item.active{color:#fff;background:rgba(255,255,255,.07);border-left-color:var(--saffron)}
+.nav-item .badge{background:var(--saffron);color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:auto}
+.main{margin-left:220px;min-height:100vh;background:var(--light)}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.topbar-title{font-size:16px;font-weight:800;color:var(--navy)}
+.topbar-right{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+.logout-btn{background:var(--light);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600}
+.logout-btn:hover{background:var(--border)}
+
+/* VIEWS */
+.view{display:none;padding:24px 28px}
+.view.active{display:block}
+
+/* STAT CARDS */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px}
+.stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;border-left:4px solid transparent}
+.stat-card.orange{border-left-color:var(--saffron)}
+.stat-card.green{border-left-color:var(--green)}
+.stat-card.red{border-left-color:var(--red)}
+.stat-card.blue{border-left-color:var(--sky)}
+.stat-val{font-size:28px;font-weight:900;color:var(--navy)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* TABLE */
+.table-card{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:20px}
+.table-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.table-title{font-size:15px;font-weight:800;color:var(--navy)}
+.search-bar{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:12px;width:220px}
+table{width:100%;border-collapse:collapse}
+th{background:var(--light);padding:10px 14px;font-size:11px;font-weight:700;color:var(--muted);text-align:left;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
+td{padding:11px 14px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFCFF}
+
+/* BADGES */
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700}
+.b-pending{background:#FEF3E2;color:#B07010}
+.b-approved{background:#EAF7EE;color:var(--green)}
+.b-rejected{background:#FEF0F0;color:var(--red)}
+.b-paused{background:#F0F0F0;color:#555}
+.b-new{background:#E8F4FD;color:var(--blue)}
+
+/* ACTION BUTTONS */
+.act-btn{padding:5px 12px;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;transition:.2s;margin-right:4px}
+.btn-approve{background:#EAF7EE;color:var(--green)}
+.btn-approve:hover{background:var(--green);color:#fff}
+.btn-reject{background:#FEF0F0;color:var(--red)}
+.btn-reject:hover{background:var(--red);color:#fff}
+.btn-view{background:var(--light);color:var(--navy)}
+.btn-view:hover{background:var(--border)}
+
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal-box{background:#fff;border-radius:16px;padding:28px;width:92%;max-width:520px;position:relative;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:12px;right:12px;background:var(--light);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px}
+.detail-row{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px}
+.detail-row:last-child{border:0}
+.detail-label{color:var(--muted);font-weight:600}
+.detail-val{color:var(--text);font-weight:500;text-align:right;max-width:60%}
+textarea.note-box{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:13px;margin:12px 0;resize:vertical;height:80px;font-family:inherit}
+textarea.note-box:focus{outline:none;border-color:var(--sky)}
+.modal-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ma-btn{flex:1;padding:10px;font-size:13px;font-weight:700;border:none;border-radius:8px;cursor:pointer;transition:.2s}
+.ma-approve{background:var(--green);color:#fff}
+.ma-reject{background:var(--red);color:#fff}
+.ma-close{background:var(--light);color:var(--text)}
+
+/* FILTERS */
+.filter-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:12px 20px;border-bottom:1px solid var(--border)}
+.filt-btn{padding:5px 12px;border:1.5px solid var(--border);border-radius:16px;background:#fff;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:.2s}
+.filt-btn.active,.filt-btn:hover{border-color:var(--navy);color:var(--navy);background:var(--light)}
+
+/* AUDIT LOG */
+.log-row{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)}
+.log-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.log-approve{background:#EAF7EE}
+.log-reject{background:#FEF0F0}
+.log-time{font-size:10px;color:var(--muted);margin-top:2px}
+.log-action{font-size:12px;font-weight:600;color:var(--navy)}
+.log-note{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* ALERT */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:999;transform:translateY(80px);opacity:0;transition:.3s}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Data<span>Seva</span></div>
+    <div class="login-sub">Admin Panel — Authorised Access Only</div>
+    <input type="email" id="login-email" placeholder="admin@dataseva.in" value="admin@dataseva.in">
+    <input type="password" id="login-pass" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-error" id="login-err">Invalid credentials. Please try again.</div>
+    <div style="font-size:11px;color:var(--muted);margin-top:16px">Demo: any email + password "admin123"</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">Data<span style="color:var(--saffron)">Seva</span><small>Admin Panel</small></div>
+    <div class="nav-item active" onclick="showView('dashboard')">📊 Dashboard</div>
+    <div class="nav-item" onclick="showView('collectors')">👤 Collectors <span class="badge" id="badge-collectors">0</span></div>
+    <div class="nav-item" onclick="showView('companies')">🏢 Companies <span class="badge" id="badge-companies">0</span></div>
+    <div class="nav-item" onclick="showView('contacts')">📞 Contact Logs</div>
+    <div class="nav-item" onclick="showView('quotes')">⚡ Managed Quotes</div>
+    <div class="nav-item" onclick="showView('audit')">📋 Audit Log</div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-right">
+        <span id="admin-email-display">admin@dataseva.in</span>
+        <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div class="stat-grid" id="dash-stats">
+        <div class="stat-card orange"><div class="stat-val" id="ds-pc">—</div><div class="stat-lbl">⏳ Pending Collectors</div></div>
+        <div class="stat-card green"><div class="stat-val" id="ds-ac">—</div><div class="stat-lbl">✅ Approved Collectors</div></div>
+        <div class="stat-card red"><div class="stat-val" id="ds-rc">—</div><div class="stat-lbl">❌ Rejected Collectors</div></div>
+        <div class="stat-card orange"><div class="stat-val" id="ds-pco">—</div><div class="stat-lbl">⏳ Pending Companies</div></div>
+        <div class="stat-card green"><div class="stat-val" id="ds-aco">—</div><div class="stat-lbl">✅ Approved Companies</div></div>
+        <div class="stat-card blue"><div class="stat-val" id="ds-ct">—</div><div class="stat-lbl">📞 Total Contacts</div></div>
+        <div class="stat-card blue"><div class="stat-val" id="ds-qt">—</div><div class="stat-lbl">⚡ Managed Quotes</div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">🕐 Recent Collector Registrations</div></div>
+          <table><thead><tr><th>Name</th><th>City</th><th>Rate</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="dash-recent-collectors"></tbody></table>
+        </div>
+        <div class="table-card">
+          <div class="table-header"><div class="table-title">🕐 Recent Company Registrations</div></div>
+          <table><thead><tr><th>Company</th><th>GSTIN</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="dash-recent-companies"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLLECTORS -->
+    <div class="view" id="view-collectors">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">👤 Collector Profiles</div>
+          <input class="search-bar" placeholder="🔍 Search name, city, mobile..." oninput="searchTable('collectors-table', this.value)">
+        </div>
+        <div class="filter-row">
+          <button class="filt-btn active" onclick="filterTable('collectors-table','status','all',this)">All</button>
+          <button class="filt-btn" onclick="filterTable('collectors-table','status','pending',this)">⏳ Pending</button>
+          <button class="filt-btn" onclick="filterTable('collectors-table','status','approved',this)">✅ Approved</button>
+          <button class="filt-btn" onclick="filterTable('collectors-table','status','rejected',this)">❌ Rejected</button>
+          <button class="filt-btn" onclick="filterTable('collectors-table','status','paused',this)">⏸ Paused</button>
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Mobile</th><th>City</th><th>Tasks</th><th>Rate</th><th>Exp</th><th>Aadhaar</th><th>Status</th><th>Registered</th><th>Actions</th></tr></thead>
+          <tbody id="collectors-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COMPANIES -->
+    <div class="view" id="view-companies">
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">🏢 Company Registrations</div>
+          <input class="search-bar" placeholder="🔍 Search company, GSTIN..." oninput="searchTable('companies-table', this.value)">
+        </div>
+        <div class="filter-row">
+          <button class="filt-btn active" onclick="filterTable('companies-table','status','all',this)">All</button>
+          <button class="filt-btn" onclick="filterTable('companies-table','status','pending',this)">⏳ Pending</button>
+          <button class="filt-btn" onclick="filterTable('companies-table','status','approved',this)">✅ Approved</button>
+          <button class="filt-btn" onclick="filterTable('companies-table','status','rejected',this)">❌ Rejected</button>
+        </div>
+        <table>
+          <thead><tr><th>Company</th><th>GSTIN</th><th>GST Verified</th><th>Contact</th><th>Mobile</th><th>City</th><th>Industry</th><th>Budget</th><th>Status</th><th>Registered</th><th>Actions</th></tr></thead>
+          <tbody id="companies-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div class="view" id="view-contacts">
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">📞 Contact Logs</div></div>
+        <table>
+          <thead><tr><th>Date</th><th>Company</th><th>Collector</th><th>Hours</th><th>Status</th><th>Description</th></tr></thead>
+          <tbody id="contacts-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- QUOTES -->
+    <div class="view" id="view-quotes">
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">⚡ Managed Service Quotes</div></div>
+        <table>
+          <thead><tr><th>Date</th><th>Company</th><th>GSTIN</th><th>Contact</th><th>Tasks</th><th>Budget</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="quotes-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- AUDIT LOG -->
+    <div class="view" id="view-audit">
+      <div class="table-card">
+        <div class="table-header"><div class="table-title">📋 Admin Audit Log</div></div>
+        <div style="padding:16px 20px" id="audit-list">
+          <div style="color:var(--muted);font-size:13px">No actions recorded yet.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-bg" id="detail-modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 id="modal-title" style="font-size:17px;font-weight:800;color:var(--navy);margin-bottom:4px"></h3>
+    <div id="modal-status-badge" style="margin-bottom:16px"></div>
+    <div id="modal-details"></div>
+    <hr style="margin:16px 0;border:none;border-top:1px solid var(--border)">
+    <label style="font-size:11px;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px">Admin Note / Rejection Reason</label>
+    <textarea class="note-box" id="modal-note" placeholder="Add a note for this decision (sent to applicant)..."></textarea>
+    <div class="modal-actions">
+      <button class="ma-btn ma-approve" onclick="takeAction('approve')">✅ Approve</button>
+      <button class="ma-btn ma-reject" onclick="takeAction('reject')">❌ Reject</button>
+      <button class="ma-btn ma-close" onclick="closeModal()">Close</button>
+    </div>
+    <div id="modal-feedback" style="font-size:12px;margin-top:10px;color:var(--green);display:none"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// SUPABASE CONFIG — replace with your project values
+// ══════════════════════════════════════════════════════════
+const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
+const SUPABASE_SERVICE_KEY = 'YOUR_SUPABASE_SERVICE_ROLE_KEY'; // service_role key, NOT anon
+// IMPORTANT: service_role key bypasses RLS — never expose in frontend production
+// For production: build a server-side admin API instead
+
+let sb = null;
+try { sb = supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY); }
+catch(e) { console.warn('Supabase not configured — demo mode'); }
+
+// ══════════════════════════════════════════════════════════
+// DEMO DATA (used when Supabase is not configured)
+// ══════════════════════════════════════════════════════════
+let DEMO = {
+  collectors: [
+    {id:'c1',first_name:'Priya',last_name:'Sharma',mobile:'+91 98765 43210',city:'Bangalore',state:'Karnataka',tasks:['household','food'],hourly_rate:850,experience_level:'mid',aadhaar_verified:true,status:'pending',created_at:'2026-06-10T09:00:00Z',bio:'Homemaker, available weekdays.',admin_note:''},
+    {id:'c2',first_name:'Ravi',last_name:'Kumar',mobile:'+91 97654 32109',city:'Chennai',state:'Tamil Nadu',tasks:['warehouse','gait'],hourly_rate:1100,experience_level:'mid',aadhaar_verified:true,status:'approved',created_at:'2026-06-09T11:30:00Z',bio:'Experienced warehouse worker.',admin_note:''},
+    {id:'c3',first_name:'Sunita',last_name:'Devi',mobile:'+91 96543 21098',city:'Delhi NCR',state:'Delhi',tasks:['household','care'],hourly_rate:650,experience_level:'new',aadhaar_verified:false,status:'pending',created_at:'2026-06-11T08:00:00Z',bio:'New to data collection.',admin_note:''},
+    {id:'c4',first_name:'Arjun',last_name:'Nair',mobile:'+91 95432 10987',city:'Kochi',state:'Kerala',tasks:['dexterity','tools'],hourly_rate:1800,experience_level:'senior',aadhaar_verified:true,status:'approved',created_at:'2026-06-08T14:00:00Z',bio:'Expert in fine dexterity tasks.',admin_note:''},
+    {id:'c5',first_name:'Meena',last_name:'Iyer',mobile:'+91 94321 09876',city:'Hyderabad',state:'Telangana',tasks:['food','household'],hourly_rate:750,experience_level:'mid',aadhaar_verified:true,status:'rejected',created_at:'2026-06-07T10:00:00Z',bio:'Home cook, flexible hours.',admin_note:'Aadhaar mismatch on verification'},
+  ],
+  companies: [
+    {id:'co1',legal_name:'Acme Robotics Private Limited',trade_name:'Acme Robotics',gstin:'29ABCDE1234F1Z5',gstin_verified:false,contact_name:'Rahul Mehta',email:'rahul@acme.in',mobile:'+91 98001 00001',city:'Bangalore',state:'Karnataka',industry:'Robotics / AI',monthly_budget:'₹2,00,000–₹5,00,000',status:'pending',created_at:'2026-06-11T09:00:00Z',admin_note:''},
+    {id:'co2',legal_name:'TechVision Labs LLP',trade_name:'TechVision',gstin:'27XYZAB9876C1Z3',gstin_verified:true,contact_name:'Sneha Iyer',email:'sneha@techvision.co',mobile:'+91 97002 00002',city:'Mumbai',state:'Maharashtra',industry:'Technology',monthly_budget:'₹5,00,000+',status:'approved',created_at:'2026-06-09T10:00:00Z',admin_note:'GSTIN verified manually via portal'},
+    {id:'co3',legal_name:'AiMove Research Pvt Ltd',trade_name:'AiMove',gstin:'33PQRST5678D1Z9',gstin_verified:false,contact_name:'Karthik R',email:'karthik@aimove.io',mobile:'+91 96003 00003',city:'Chennai',state:'Tamil Nadu',industry:'Research',monthly_budget:'₹50,000–₹2,00,000',status:'pending',created_at:'2026-06-10T15:00:00Z',admin_note:''},
+  ],
+  contacts: [
+    {id:'ct1',created_at:'2026-06-11T10:00:00Z',company_name:'TechVision Labs',collector_name:'Ravi Kumar',hours_needed:'20–50 hrs',status:'hired',project_desc:'Warehouse motion capture for sorting bot'},
+    {id:'ct2',created_at:'2026-06-10T14:00:00Z',company_name:'TechVision Labs',collector_name:'Arjun Nair',hours_needed:'5–20 hrs',status:'contacted',project_desc:'Fine dexterity assembly task recording'},
+  ],
+  quotes: [
+    {id:'q1',created_at:'2026-06-11T11:00:00Z',company_name:'Acme Robotics',gstin:'29ABCDE1234F1Z5',contact_name:'Rahul Mehta',tasks_needed:['household','warehouse'],hours_needed:'200–500 hrs',budget_range:'₹5,00,000–₹15,00,000',status:'new'},
+  ],
+  auditLog: []
+};
+
+let currentItem = null;
+let currentType = null;
+let adminEmail = 'admin@dataseva.in';
+
+// ══════════════════════════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('login-email').value;
+  const pass = document.getElementById('login-pass').value;
+  // Demo: accept any email with password "admin123"
+  // Production: use Supabase auth
+  if(pass === 'admin123' || (sb && pass.length > 0)) {
+    adminEmail = email;
+    document.getElementById('admin-email-display').textContent = email;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadDashboard();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+function doLogout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════
+// VIEWS
+// ══════════════════════════════════════════════════════════
+const viewTitles = {dashboard:'📊 Dashboard',collectors:'👤 Collectors',companies:'🏢 Companies',contacts:'📞 Contact Logs',quotes:'⚡ Managed Quotes',audit:'📋 Audit Log'};
+
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  document.getElementById('topbar-title').textContent = viewTitles[id]||id;
+  if(id==='collectors') renderCollectors();
+  if(id==='companies') renderCompanies();
+  if(id==='contacts') renderContacts();
+  if(id==='quotes') renderQuotes();
+  if(id==='audit') renderAudit();
+}
+
+// ══════════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════════
+async function loadDashboard() {
+  const d = DEMO;
+  const pc = d.collectors.filter(c=>c.status==='pending').length;
+  const ac = d.collectors.filter(c=>c.status==='approved').length;
+  const rc = d.collectors.filter(c=>c.status==='rejected').length;
+  const pco = d.companies.filter(c=>c.status==='pending').length;
+  const aco = d.companies.filter(c=>c.status==='approved').length;
+  document.getElementById('ds-pc').textContent = pc;
+  document.getElementById('ds-ac').textContent = ac;
+  document.getElementById('ds-rc').textContent = rc;
+  document.getElementById('ds-pco').textContent = pco;
+  document.getElementById('ds-aco').textContent = aco;
+  document.getElementById('ds-ct').textContent = d.contacts.length;
+  document.getElementById('ds-qt').textContent = d.quotes.length;
+  document.getElementById('badge-collectors').textContent = pc;
+  document.getElementById('badge-companies').textContent = pco;
+
+  // Recent collectors
+  const rc5 = [...d.collectors].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+  document.getElementById('dash-recent-collectors').innerHTML = rc5.map(c=>`
+    <tr>
+      <td><strong>${c.first_name} ${c.last_name}</strong></td>
+      <td>${c.city}</td>
+      <td>₹${c.hourly_rate.toLocaleString('en-IN')}/hr</td>
+      <td><span class="badge b-${c.status}">${c.status}</span></td>
+      <td><button class="act-btn btn-view" onclick="openModal('collector','${c.id}')">View</button></td>
+    </tr>`).join('');
+
+  const co5 = [...d.companies].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5);
+  document.getElementById('dash-recent-companies').innerHTML = co5.map(c=>`
+    <tr>
+      <td><strong>${c.legal_name}</strong></td>
+      <td><code style="font-size:10px">${c.gstin}</code></td>
+      <td><span class="badge b-${c.status}">${c.status}</span></td>
+      <td><button class="act-btn btn-view" onclick="openModal('company','${c.id}')">View</button></td>
+    </tr>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER TABLES
+// ══════════════════════════════════════════════════════════
+function renderCollectors(filter='all') {
+  const list = filter==='all' ? DEMO.collectors : DEMO.collectors.filter(c=>c.status===filter);
+  document.getElementById('collectors-table').innerHTML = list.map(c=>`
+    <tr data-status="${c.status}">
+      <td><strong>${c.first_name} ${c.last_name}</strong></td>
+      <td>${c.mobile}</td>
+      <td>${c.city}</td>
+      <td>${(c.tasks||[]).join(', ')}</td>
+      <td>₹${c.hourly_rate.toLocaleString('en-IN')}/hr</td>
+      <td>${c.experience_level}</td>
+      <td>${c.aadhaar_verified?'<span style="color:var(--green);font-weight:700">✓ Yes</span>':'<span style="color:var(--red)">✗ No</span>'}</td>
+      <td><span class="badge b-${c.status}">${c.status}</span></td>
+      <td>${fmtDate(c.created_at)}</td>
+      <td>
+        <button class="act-btn btn-view" onclick="openModal('collector','${c.id}')">View</button>
+        ${c.status==='pending'?`<button class="act-btn btn-approve" onclick="quickAction('collector','${c.id}','approve')">✅</button><button class="act-btn btn-reject" onclick="quickAction('collector','${c.id}','reject')">❌</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+function renderCompanies(filter='all') {
+  const list = filter==='all' ? DEMO.companies : DEMO.companies.filter(c=>c.status===filter);
+  document.getElementById('companies-table').innerHTML = list.map(c=>`
+    <tr data-status="${c.status}">
+      <td><strong>${c.legal_name}</strong><br><span style="font-size:10px;color:var(--muted)">${c.trade_name||''}</span></td>
+      <td><code style="font-size:10px">${c.gstin}</code></td>
+      <td>${c.gstin_verified?'<span style="color:var(--green);font-weight:700">✓ Verified</span>':'<span style="color:var(--gold);font-weight:700">⏳ Pending</span>'}</td>
+      <td>${c.contact_name}<br><span style="font-size:10px;color:var(--muted)">${c.email}</span></td>
+      <td>${c.mobile}</td>
+      <td>${c.city}</td>
+      <td>${c.industry}</td>
+      <td style="font-size:11px">${c.monthly_budget}</td>
+      <td><span class="badge b-${c.status}">${c.status}</span></td>
+      <td>${fmtDate(c.created_at)}</td>
+      <td>
+        <button class="act-btn btn-view" onclick="openModal('company','${c.id}')">View</button>
+        ${c.status==='pending'?`<button class="act-btn btn-approve" onclick="quickAction('company','${c.id}','approve')">✅</button><button class="act-btn btn-reject" onclick="quickAction('company','${c.id}','reject')">❌</button>`:''}
+      </td>
+    </tr>`).join('');
+}
+
+function renderContacts() {
+  document.getElementById('contacts-table').innerHTML = DEMO.contacts.map(c=>`
+    <tr>
+      <td>${fmtDate(c.created_at)}</td>
+      <td>${c.company_name}</td>
+      <td>${c.collector_name}</td>
+      <td>${c.hours_needed}</td>
+      <td><span class="badge b-${c.status==='hired'?'approved':c.status==='contacted'?'new':'pending'}">${c.status}</span></td>
+      <td style="max-width:200px;font-size:11px">${c.project_desc}</td>
+    </tr>`).join('');
+}
+
+function renderQuotes() {
+  document.getElementById('quotes-table').innerHTML = DEMO.quotes.map(q=>`
+    <tr>
+      <td>${fmtDate(q.created_at)}</td>
+      <td>${q.company_name}</td>
+      <td><code style="font-size:10px">${q.gstin}</code></td>
+      <td>${q.contact_name}</td>
+      <td style="font-size:11px">${(q.tasks_needed||[]).join(', ')}</td>
+      <td style="font-size:11px">${q.budget_range}</td>
+      <td><span class="badge b-${q.status==='new'?'pending':q.status==='converted'?'approved':'new'}">${q.status}</span></td>
+      <td>
+        <select onchange="updateQuoteStatus('${q.id}',this.value)" style="font-size:11px;padding:4px;border:1px solid var(--border);border-radius:6px">
+          <option ${q.status==='new'?'selected':''}>new</option>
+          <option ${q.status==='contacted'?'selected':''}>contacted</option>
+          <option ${q.status==='proposal_sent'?'selected':''}>proposal_sent</option>
+          <option ${q.status==='converted'?'selected':''}>converted</option>
+          <option ${q.status==='closed'?'selected':''}>closed</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function renderAudit() {
+  const list = document.getElementById('audit-list');
+  if(!DEMO.auditLog.length){list.innerHTML='<div style="color:var(--muted);font-size:13px;padding:8px 0">No actions recorded yet.</div>';return;}
+  list.innerHTML = DEMO.auditLog.slice().reverse().map(a=>`
+    <div class="log-row">
+      <div class="log-icon ${a.action.includes('approve')?'log-approve':'log-reject'}">${a.action.includes('approve')?'✅':'❌'}</div>
+      <div>
+        <div class="log-action">${a.action} — ${a.target_name}</div>
+        <div class="log-time">${fmtDate(a.created_at)} · ${a.admin_email}</div>
+        ${a.note?`<div class="log-note">Note: ${a.note}</div>`:''}
+      </div>
+    </div>`).join('');
+}
+
+// ══════════════════════════════════════════════════════════
+// MODAL
+// ══════════════════════════════════════════════════════════
+function openModal(type, id) {
+  currentType = type;
+  const item = type==='collector' ? DEMO.collectors.find(c=>c.id===id) : DEMO.companies.find(c=>c.id===id);
+  if(!item) return;
+  currentItem = item;
+
+  document.getElementById('modal-feedback').style.display='none';
+  document.getElementById('modal-note').value = item.admin_note||'';
+
+  if(type==='collector') {
+    document.getElementById('modal-title').textContent = item.first_name+' '+item.last_name;
+    document.getElementById('modal-status-badge').innerHTML = `<span class="badge b-${item.status}">${item.status}</span>`;
+    document.getElementById('modal-details').innerHTML = [
+      ['Mobile', item.mobile],
+      ['City / State', `${item.city}, ${item.state}`],
+      ['Tasks', (item.tasks||[]).join(', ')],
+      ['Hourly Rate', `₹${item.hourly_rate.toLocaleString('en-IN')}/hr`],
+      ['Experience', item.experience_level],
+      ['Aadhaar Verified', item.aadhaar_verified?'✓ Yes':'✗ No'],
+      ['Bio', item.bio||'—'],
+      ['Registered', fmtDate(item.created_at)],
+      ['Admin Note', item.admin_note||'—'],
+    ].map(([l,v])=>`<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-val">${v}</span></div>`).join('');
+  } else {
+    document.getElementById('modal-title').textContent = item.legal_name;
+    document.getElementById('modal-status-badge').innerHTML = `<span class="badge b-${item.status}">${item.status}</span> ${item.gstin_verified?'<span style="color:var(--green);font-size:11px;font-weight:700">· GST Verified</span>':'<span style="color:var(--gold);font-size:11px;font-weight:700">· GST Pending Verification</span>'}`;
+    document.getElementById('modal-details').innerHTML = [
+      ['Trade Name', item.trade_name||'—'],
+      ['GSTIN', item.gstin],
+      ['GST Verified', item.gstin_verified?'✓ Yes':'⏳ Pending'],
+      ['Contact', item.contact_name],
+      ['Email', item.email],
+      ['Mobile', item.mobile],
+      ['City / State', `${item.city}, ${item.state}`],
+      ['Industry', item.industry],
+      ['Monthly Budget', item.monthly_budget||'—'],
+      ['Registered', fmtDate(item.created_at)],
+      ['Admin Note', item.admin_note||'—'],
+    ].map(([l,v])=>`<div class="detail-row"><span class="detail-label">${l}</span><span class="detail-val">${v}</span></div>`).join('');
+  }
+  document.getElementById('detail-modal').classList.add('show');
+}
+
+function closeModal() { document.getElementById('detail-modal').classList.remove('show'); currentItem=null; currentType=null; }
+
+async function takeAction(action) {
+  if(!currentItem) return;
+  const note = document.getElementById('modal-note').value.trim();
+  if(action==='reject' && !note) { document.getElementById('modal-feedback').style.display='block'; document.getElementById('modal-feedback').style.color='var(--red)'; document.getElementById('modal-feedback').textContent='Please add a rejection reason in the note field.'; return; }
+  await applyDecision(currentType, currentItem.id, action, note);
+  document.getElementById('modal-feedback').style.display='block';
+  document.getElementById('modal-feedback').style.color='var(--green)';
+  document.getElementById('modal-feedback').textContent = `✅ ${action==='approve'?'Approved':'Rejected'} successfully.`;
+  setTimeout(closeModal, 1200);
+}
+
+async function quickAction(type, id, action) {
+  await applyDecision(type, id, action, '');
+}
+
+async function applyDecision(type, id, action, note) {
+  const status = action==='approve'?'approved':'rejected';
+  const list = type==='collector' ? DEMO.collectors : DEMO.companies;
+  const item = list.find(x=>x.id===id);
+  if(item) { item.status=status; item.admin_note=note; }
+
+  // Add to audit log
+  DEMO.auditLog.push({
+    id:'al'+Date.now(), created_at:new Date().toISOString(),
+    admin_email:adminEmail, action:`${action}_${type}`,
+    target_type:type, target_id:id,
+    target_name: type==='collector'?(item.first_name+' '+item.last_name):item.legal_name,
+    note
+  });
+
+  // Supabase update (when configured)
+  if(sb && SUPABASE_URL !== 'YOUR_SUPABASE_PROJECT_URL') {
+    const tbl = type==='collector'?'collectors':'companies';
+    await sb.from(tbl).update({status,admin_note:note}).eq('id',id);
+    await sb.from('audit_log').insert([{admin_email:adminEmail,action:`${action}_${type}`,target_type:type,target_id:id,target_name:type==='collector'?(item.first_name+' '+item.last_name):item.legal_name,note}]);
+  }
+
+  showToast(action==='approve'?'✅ Approved successfully':'❌ Rejected with note');
+  loadDashboard();
+  if(type==='collector') renderCollectors();
+  if(type==='company') renderCompanies();
+}
+
+function updateQuoteStatus(id, status) {
+  const q = DEMO.quotes.find(x=>x.id===id);
+  if(q) q.status=status;
+  showToast('Quote status updated to: '+status);
+}
+
+// ══════════════════════════════════════════════════════════
+// TABLE SEARCH & FILTER
+// ══════════════════════════════════════════════════════════
+function searchTable(tbodyId, q) {
+  const rows = document.getElementById(tbodyId).querySelectorAll('tr');
+  q = q.toLowerCase();
+  rows.forEach(r => r.style.display = r.textContent.toLowerCase().includes(q)?'':'none');
+}
+function filterTable(tbodyId, attr, val, btn) {
+  document.querySelectorAll('.filter-row .filt-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const rows = document.getElementById(tbodyId).querySelectorAll('tr');
+  rows.forEach(r => r.style.display = (val==='all'||r.dataset[attr]===val)?'':'none');
+}
+
+// ══════════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════════
+function fmtDate(d) { return d?new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'-'; }
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+</script>
+</body>
+</html>
