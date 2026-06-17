@@ -234,8 +234,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(165px,1fr));gap:12px;margin-bottom:36px">
       <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🏠</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_household">Household Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_household_desc">Cooking, cleaning, folding</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹600–₹1,200/hr</div></div>
       <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">📦</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_warehouse">Warehouse Motion</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_warehouse_desc">Picking, packing, sorting</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹800–₹1,800/hr</div></div>
-      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🖐️</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_dexterity">Dexterity Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_dexterity_desc">Fine motor, grasping</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,000–₹2,500/hr</div></div>
-      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🚶</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_gait">Gait & Navigation</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_gait_desc">Walking, stairs, obstacles</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,200–₹3,000/hr</div></div>
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🖐️</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_hand">Hand Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_hand_desc">Finger & hand movements</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,000–₹2,500/hr</div></div>
+      <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🚶</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_walking">Walking Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_walking_desc">Walking, stairs & paths</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,200–₹3,000/hr</div></div>
       <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🏥</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_care">Care Tasks</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_care_desc">Elder assist, rehab</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹900–₹2,200/hr</div></div>
       <div class="card" style="text-align:center;cursor:pointer" onclick="showPage('join')"><div style="font-size:26px;margin-bottom:6px">🔧</div><div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:3px" data-i18n="task_tools">Tool Use</div><div style="font-size:11px;color:var(--muted)" data-i18n="task_tools_desc">Maintenance, assembly</div><div style="font-size:12px;color:var(--green);font-weight:700;margin-top:6px">₹1,000–₹2,000/hr</div></div>
     </div>
@@ -263,8 +263,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
             <option value="" data-i18n="opt_any">Any</option>
             <option value="household" data-i18n="task_household">🏠 Household</option>
             <option value="warehouse" data-i18n="task_warehouse">📦 Warehouse</option>
-            <option value="dexterity" data-i18n="task_dexterity">🖐️ Dexterity</option>
-            <option value="gait" data-i18n="task_gait">🚶 Gait</option>
+            <option value="hand" data-i18n="task_hand">🖐️ Hand Tasks</option>
+            <option value="walking" data-i18n="task_walking">🚶 Walking Tasks</option>
             <option value="care" data-i18n="task_care">🏥 Care</option>
             <option value="tools" data-i18n="task_tools">🔧 Tool Use</option>
             <option value="food">🍳 Food Prep</option>
@@ -351,8 +351,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
       <button class="filter-btn active" onclick="filterBrowse(this,'all')" data-i18n="filter_all">All</button>
       <button class="filter-btn" onclick="filterBrowse(this,'household')">🏠</button>
       <button class="filter-btn" onclick="filterBrowse(this,'warehouse')">📦</button>
-      <button class="filter-btn" onclick="filterBrowse(this,'dexterity')">🖐️</button>
-      <button class="filter-btn" onclick="filterBrowse(this,'gait')">🚶</button>
+      <button class="filter-btn" onclick="filterBrowse(this,'hand')">🖐️</button>
+      <button class="filter-btn" onclick="filterBrowse(this,'walking')">🚶</button>
       <button class="filter-btn" onclick="filterBrowse(this,'care')">🏥</button>
     </div>
     <div class="cards-grid" id="browse-grid"></div>
@@ -442,8 +442,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
           <div class="checkbox-group">
             <label class="cb"><input type="checkbox" checked> 🏠 Household</label>
             <label class="cb"><input type="checkbox"> 📦 Warehouse</label>
-            <label class="cb"><input type="checkbox"> 🖐️ Dexterity</label>
-            <label class="cb"><input type="checkbox"> 🚶 Gait</label>
+            <label class="cb"><input type="checkbox"> 🖐️ Hand Tasks</label>
+            <label class="cb"><input type="checkbox"> 🚶 Walking Tasks</label>
             <label class="cb"><input type="checkbox"> 🏥 Care</label>
             <label class="cb"><input type="checkbox"> 🍳 Food Prep</label>
             <label class="cb"><input type="checkbox"> 🔧 Tool Use</label>
@@ -511,8 +511,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
           <div style="font-size:11px;font-weight:700;color:var(--navy);margin-bottom:8px;letter-spacing:.5px" data-i18n="rate_guide_title">💡 MARKET RATE GUIDE — INDIA 2026</div>
           <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🏠 Household</span><span style="color:var(--green);font-weight:700">₹500–₹1,200/hr</span></div>
           <div class="rate-row"><span style="font-weight:600;color:var(--navy)">📦 Warehouse</span><span style="color:var(--green);font-weight:700">₹700–₹1,800/hr</span></div>
-          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🖐️ Dexterity + Sensors</span><span style="color:var(--green);font-weight:700">₹1,000–₹2,500/hr</span></div>
-          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🚶 Gait + Motion Capture</span><span style="color:var(--green);font-weight:700">₹1,200–₹3,000/hr</span></div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🖐️ Hand Tasks + Sensors</span><span style="color:var(--green);font-weight:700">₹1,000–₹2,500/hr</span></div>
+          <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🚶 Walking Tasks + Motion Capture</span><span style="color:var(--green);font-weight:700">₹1,200–₹3,000/hr</span></div>
           <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🏥 Care Tasks</span><span style="color:var(--green);font-weight:700">₹800–₹2,200/hr</span></div>
           <div class="rate-row"><span style="font-weight:600;color:var(--navy)">🆕 New Collector (start here)</span><span style="color:var(--green);font-weight:700">₹400–₹700/hr</span></div>
         </div>
@@ -646,8 +646,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
           <div class="checkbox-group">
             <label class="cb"><input type="checkbox"> 🏠 Household</label>
             <label class="cb"><input type="checkbox"> 📦 Warehouse</label>
-            <label class="cb"><input type="checkbox"> 🖐️ Dexterity</label>
-            <label class="cb"><input type="checkbox"> 🚶 Gait</label>
+            <label class="cb"><input type="checkbox"> 🖐️ Hand Tasks</label>
+            <label class="cb"><input type="checkbox"> 🚶 Walking Tasks</label>
             <label class="cb"><input type="checkbox"> 🏥 Care</label>
             <label class="cb"><input type="checkbox"> 🔧 Tools</label>
           </div>
@@ -714,8 +714,8 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:20px 0}
         <div class="checkbox-group">
           <label class="cb"><input type="checkbox"> 🏠 Household</label>
           <label class="cb"><input type="checkbox"> 📦 Warehouse</label>
-          <label class="cb"><input type="checkbox"> 🖐️ Dexterity</label>
-          <label class="cb"><input type="checkbox"> 🚶 Gait</label>
+          <label class="cb"><input type="checkbox"> 🖐️ Hand Tasks</label>
+          <label class="cb"><input type="checkbox"> 🚶 Walking Tasks</label>
           <label class="cb"><input type="checkbox"> 🏥 Care</label>
           <label class="cb"><input type="checkbox"> 🔧 Tools</label>
         </div>
@@ -879,8 +879,8 @@ const T = {
     home_tasks_sub:"All tasks used to train next-gen humanoid robots and AI systems",
     task_household:"Household Tasks", task_household_desc:"Cooking, cleaning, folding",
     task_warehouse:"Warehouse Motion", task_warehouse_desc:"Picking, packing, sorting",
-    task_dexterity:"Dexterity Tasks", task_dexterity_desc:"Fine motor, grasping",
-    task_gait:"Gait & Navigation", task_gait_desc:"Walking, stairs, obstacles",
+    task_hand:"Hand Tasks", task_hand_desc:"Finger & hand movements",
+    task_walking:"Walking Tasks", task_walking_desc:"Walking, stairs & paths",
     task_care:"Care Tasks", task_care_desc:"Elder assist, rehab",
     task_tools:"Tool Use", task_tools_desc:"Maintenance, assembly",
     home_cta_match:"🎯 Find Matched Collectors", home_cta_managed:"⚡ Managed Service",
@@ -960,8 +960,8 @@ const T = {
     home_tasks_title:"आप क्या रिकॉर्ड कर सकते हैं?",
     task_household:"घरेलू कार्य", task_household_desc:"खाना पकाना, सफाई, तह करना",
     task_warehouse:"वेयरहाउस मोशन", task_warehouse_desc:"पिकिंग, पैकिंग, छँटाई",
-    task_dexterity:"कुशलता कार्य", task_dexterity_desc:"बारीक मोटर, पकड़",
-    task_gait:"चाल और नेविगेशन", task_gait_desc:"चलना, सीढ़ियाँ, बाधाएँ",
+    task_hand:"कुशलता कार्य", task_hand_desc:"बारीक मोटर, पकड़",
+    task_walking:"चाल और नेविगेशन", task_walking_desc:"चलना, सीढ़ियाँ, बाधाएँ",
     task_care:"देखभाल कार्य", task_care_desc:"बुजुर्ग सहायता, पुनर्वास",
     task_tools:"उपकरण उपयोग", task_tools_desc:"रखरखाव, असेंबली",
     home_cta_match:"🎯 मिलान वाले कलेक्टर खोजें", home_cta_managed:"⚡ प्रबंधित सेवा",
@@ -1067,17 +1067,17 @@ function setLang(lang) {
 // ══════════════════════════════════════════════════════════════════
 const COLLECTORS = [
   {id:1,name:"Priya Sharma",city:"Bangalore",state:"Karnataka",emoji:"👩",color:"#EEF6FD",tasks:["household","food"],tags:["🏠 Household","🍳 Food Prep"],rate:850,rating:4.9,reviews:34,equip:"camera",avail:"weekday",lang:"Kannada",exp:"mid",aadhaar:true,managed:true,phone:"+91 98765 43210"},
-  {id:2,name:"Ravi Kumar",city:"Chennai",state:"Tamil Nadu",emoji:"👨",color:"#EAF7EE",tasks:["warehouse","gait"],tags:["📦 Warehouse","🚶 Gait"],rate:1100,rating:4.8,reviews:21,equip:"mount",avail:"flexible",lang:"Tamil",exp:"mid",aadhaar:true,managed:false,phone:"+91 97654 32109"},
+  {id:2,name:"Ravi Kumar",city:"Chennai",state:"Tamil Nadu",emoji:"👨",color:"#EAF7EE",tasks:["warehouse","walking"],tags:["📦 Warehouse","🚶 Walking Tasks"],rate:1100,rating:4.8,reviews:21,equip:"mount",avail:"flexible",lang:"Tamil",exp:"mid",aadhaar:true,managed:false,phone:"+91 97654 32109"},
   {id:3,name:"Sunita Devi",city:"Delhi NCR",state:"Delhi",emoji:"👩",color:"#FEF3E2",tasks:["household","care"],tags:["🏠 Household","🏥 Care"],rate:650,rating:5.0,reviews:12,equip:"camera",avail:"weekday",lang:"Hindi",exp:"new",aadhaar:false,managed:false,phone:"+91 96543 21098"},
-  {id:4,name:"Arjun Nair",city:"Kochi",state:"Kerala",emoji:"👨",color:"#F3EEF8",tasks:["dexterity","tools"],tags:["🖐️ Dexterity","🔧 Tool Use"],rate:1800,rating:4.9,reviews:58,equip:"wearable",avail:"weekend",lang:"Malayalam",exp:"senior",aadhaar:true,managed:true,phone:"+91 95432 10987"},
+  {id:4,name:"Arjun Nair",city:"Kochi",state:"Kerala",emoji:"👨",color:"#F3EEF8",tasks:["hand","tools"],tags:["🖐️ Hand Tasks","🔧 Tool Use"],rate:1800,rating:4.9,reviews:58,equip:"wearable",avail:"weekend",lang:"Malayalam",exp:"senior",aadhaar:true,managed:true,phone:"+91 95432 10987"},
   {id:5,name:"Meena Iyer",city:"Hyderabad",state:"Telangana",emoji:"👩",color:"#EAF7EE",tasks:["food","household"],tags:["🍳 Food Prep","🏠 Household"],rate:750,rating:4.7,reviews:29,equip:"camera",avail:"weekday",lang:"Telugu",exp:"mid",aadhaar:true,managed:false,phone:"+91 94321 09876"},
   {id:6,name:"Vikram Singh",city:"Jaipur",state:"Rajasthan",emoji:"👨",color:"#EEF6FD",tasks:["warehouse","tools"],tags:["📦 Warehouse","🔧 Tool Use"],rate:900,rating:4.6,reviews:44,equip:"mount",avail:"flexible",lang:"Hindi",exp:"mid",aadhaar:true,managed:true,phone:"+91 93210 98765"},
   {id:7,name:"Lakshmi Menon",city:"Pune",state:"Maharashtra",emoji:"👩",color:"#FEF3E2",tasks:["care","household"],tags:["🏥 Care","🏠 Household"],rate:1000,rating:4.8,reviews:67,equip:"camera",avail:"weekday",lang:"Marathi",exp:"senior",aadhaar:true,managed:true,phone:"+91 92109 87654"},
-  {id:8,name:"Suresh Babu",city:"Bangalore",state:"Karnataka",emoji:"👨",color:"#EAF7EE",tasks:["gait","warehouse"],tags:["🚶 Gait","📦 Warehouse"],rate:1400,rating:5.0,reviews:8,equip:"mocap",avail:"weekend",lang:"Kannada",exp:"senior",aadhaar:true,managed:false,phone:"+91 91098 76543"},
-  {id:9,name:"Anita Rao",city:"Mumbai",state:"Maharashtra",emoji:"👩",color:"#F3EEF8",tasks:["dexterity","food"],tags:["🖐️ Dexterity","🍳 Food Prep"],rate:1300,rating:4.9,reviews:31,equip:"wearable",avail:"flexible",lang:"Marathi",exp:"mid",aadhaar:true,managed:true,phone:"+91 90987 65432"},
+  {id:8,name:"Suresh Babu",city:"Bangalore",state:"Karnataka",emoji:"👨",color:"#EAF7EE",tasks:["walking","warehouse"],tags:["🚶 Walking Tasks","📦 Warehouse"],rate:1400,rating:5.0,reviews:8,equip:"mocap",avail:"weekend",lang:"Kannada",exp:"senior",aadhaar:true,managed:false,phone:"+91 91098 76543"},
+  {id:9,name:"Anita Rao",city:"Mumbai",state:"Maharashtra",emoji:"👩",color:"#F3EEF8",tasks:["hand","food"],tags:["🖐️ Hand Tasks","🍳 Food Prep"],rate:1300,rating:4.9,reviews:31,equip:"wearable",avail:"flexible",lang:"Marathi",exp:"mid",aadhaar:true,managed:true,phone:"+91 90987 65432"},
   {id:10,name:"Manoj Pandey",city:"Lucknow",state:"Uttar Pradesh",emoji:"👨",color:"#EEF6FD",tasks:["household","care"],tags:["🏠 Household","🏥 Care"],rate:580,rating:4.5,reviews:15,equip:"camera",avail:"weekday",lang:"Hindi",exp:"new",aadhaar:false,managed:false,phone:"+91 89876 54321"},
   {id:11,name:"Deepa Krishnan",city:"Chennai",state:"Tamil Nadu",emoji:"👩",color:"#EAF7EE",tasks:["food","household"],tags:["🍳 Food Prep","🏠 Household"],rate:720,rating:4.8,reviews:22,equip:"camera",avail:"weekday",lang:"Tamil",exp:"mid",aadhaar:true,managed:false,phone:"+91 88765 43210"},
-  {id:12,name:"Ramesh Gupta",city:"Ahmedabad",state:"Gujarat",emoji:"👨",color:"#FEF3E2",tasks:["warehouse","gait","tools"],tags:["📦 Warehouse","🚶 Gait"],rate:1050,rating:4.7,reviews:39,equip:"mount",avail:"flexible",lang:"Gujarati",exp:"mid",aadhaar:true,managed:true,phone:"+91 87654 32109"},
+  {id:12,name:"Ramesh Gupta",city:"Ahmedabad",state:"Gujarat",emoji:"👨",color:"#FEF3E2",tasks:["warehouse","walking","tools"],tags:["📦 Warehouse","🚶 Walking Tasks"],rate:1050,rating:4.7,reviews:39,equip:"mount",avail:"flexible",lang:"Gujarati",exp:"mid",aadhaar:true,managed:true,phone:"+91 87654 32109"},
 ];
 
 // ══════════════════════════════════════════════════════════════════
@@ -1261,7 +1261,7 @@ function showRateFeedback() {
   if(v<400){fb.style.background='#FEF0F0';fb.style.color='#C0392B';fb.textContent='⚠️ Too low — minimum recommended ₹400/hr.';}
   else if(v<=800){fb.style.background='#EAF7EE';fb.style.color='#1A7A40';fb.textContent='✅ Competitive for a new collector. Good starting point.';}
   else if(v<=1500){fb.style.background='#EEF6FD';fb.style.color='#2C5F8A';fb.textContent='📊 Mid-range — strong rate for experienced collectors.';}
-  else if(v<=2500){fb.style.background='#EEF6FD';fb.style.color='#2C5F8A';fb.textContent='📊 Premium rate — for dexterity/motion capture specialists.';}
+  else if(v<=2500){fb.style.background='#EEF6FD';fb.style.color='#2C5F8A';fb.textContent='📊 Premium rate — for hand/motion capture specialists.';}
   else{fb.style.background='#FEF3E2';fb.style.color='#9A6010';fb.textContent='⚠️ Very high — only viable with full motion capture setup.';}
 }
 
